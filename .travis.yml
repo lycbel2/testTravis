@@ -51,3 +51,5 @@ env:
   global:
   - WINEDLLOVERRIDES="mscoree,mshtml="
   - WINEDEBUG="-all"
+  CSC_LINK : "cer.p12"
+  CSC_KEY_PASSWORD : "Xindong123"
