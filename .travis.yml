@@ -1,19 +1,17 @@
 sudo: required
 os:
-# Temporary disable CI on linux untils the electron-slim-linux is date out.
-# - linux
 - osx
 dist: trusty
 osx_image: xcode9.2
 language: node_js
 node_js:
-- 'node'
+- node
 matrix:
-  allow_failures:
+  allow_failures: 
 cache:
 - apt: true
 - directories:
-  - "node_modules"
+  - node_modules
   - "$HOME/.electron"
 before_install:
 - bash test/ci/before_install.sh
@@ -23,22 +21,16 @@ install:
 - npm install
 - npm update
 before_script:
-# Generate a virtual framebuffer X server to collect Electron windows
 - export DISPLAY=:99.0
 - if [ $TRAVIS_OS_NAME == "linux" ]; then sh -e /etc/init.d/xvfb start; sleep 3; fi
 script:
-#- xvfb-maybe node_modules/.bin/karma start test/unit/karma.conf.js
-#- yarn run pack && xvfb-maybe node_modules/.bin/mocha test/e2e
-# - if [ $TRAVIS_OS_NAME == "linux" ]; then xvfb-maybe npm run unit; else npm run unit; fi
 - npm run unit
-# - npm run e2e
 - npm run build
 deploy:
   provider: releases
-  name: $TRAVIS_TAG
+  name: "$TRAVIS_TAG"
   file_glob: true
   overwrite: true
-  github-token: 182981a70b41b783be24701519f9020fd276bc14
   file:
   - build/*.dmg
   - build/*.deb
@@ -46,15 +38,16 @@ deploy:
   skip_cleanup: true
   on:
     tags: true
+  api-key:
+    secure: t04+2tEMGkMq/dr051XNZCEkhXWx6IKmKRpRfXtfviKMeq8nP1BYXnQ8jKlIQJwGgVKMzbFYpDcwEIaW0jKWN+EySOT+k8PhcTPZTno8BHKhE3JMb2CAYVjPkfVC7oDWp9K44gXR3h5BGn+w1paccgKBazwxSQUy+df5zsxxb0ohQKABFqzhzqKZuSOFz9GzwVQxAlSFiX6O6hqtWz4Pqt8d3foklw5a1iu5E7RXShLIcPCpPqFPF6RSrszpRcZtd5kRHTpWEWu2ETKKlKGSV5lQzkOjubT9NpmLMMLQhBpvR1XP2NbGSAcmYeNoQIf5gzL2cQWjgRbe8zbREB0/I/8nNudLQ84U8W6vQ7uzD555eYu29x+8Iv7RSAgS6w7SHThGhlY38QnFPDFPxsDiO872qExFsFdyQOVkudsJt+hPGkVcq2BTIzutiRZNpnb30eSgOtnoiQ0VcUDSnUhPgEw2ZFS1c6Q7fP3TH+2fwvQVZYLgb1DWir4Ixim3gRLLIHaUDb3xnNSq0mnLG5is4Ze3WRHJ91gZZ6ILFN/TX2cOHFzhIYiUMX3QfL6rTyj22PQbHp9sriVY5UsEoMJq+/r6ZoIVTlRgYNQLknBablcidcJJlTl6uv5JJY3nPSVjGKlRsW0049t54vuSNNkFUXNEJXA8tCw7/OyyqwUsBmU=
 after_success:
 - codecov
-branches:
+branches: 
 addons:
   apt:
     packages:
     - xvfb
 env:
   global:
-    # prevent wine popup dialogs about installing additional packages
-    - WINEDLLOVERRIDES="mscoree,mshtml="
-    - WINEDEBUG="-all"
+  - WINEDLLOVERRIDES="mscoree,mshtml="
+  - WINEDEBUG="-all"
