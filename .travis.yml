@@ -35,7 +35,7 @@ deploy:
   - build/*.dmg
   - build/*.deb
   - build/*.rpm
-  - build/latest*.yml
+  - build/*.yml
   - build/*.blockmap
   skip_cleanup: true
   on:
