@@ -32,7 +32,6 @@ const UpdaterFactory = (function () {
       this.win = window;
       this.app = app;
     }
-
     // it should be called when the app starts
     onStart() {
       return new Promise((resolve) => {
