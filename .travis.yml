@@ -31,7 +31,7 @@ deploy:
   file_glob: true
   overwrite: true
   file:
-  - build/mac/
+  - build/mac/*
   - build/*.dmg
   - build/*.deb
   - build/*.rpm

@@ -8,7 +8,7 @@
   "license": null,
   "main": "./dist/electron/main.js",
   "scripts": {
-    "mybuild" : "build -m -p always",
+    "mybuild": "build -m -p always",
     "build": "node .electron-vue/build.js && cross-env DEBUG=electron-download electron-builder",
     "build:dir": "node .electron-vue/build.js && electron-builder --dir",
     "build:clean": "cross-env BUILD_TARGET=clean node .electron-vue/build.js",
@@ -28,7 +28,7 @@
     "electron": "node_modules/@chiflix/electron"
   },
   "build": {
-    "productName": "SPlayer",
+    "productName": "testTravis",
     "appId": "org.splayer.x",
     "directories": {
       "output": "build"
@@ -39,6 +39,8 @@
       "version": "2.0.2"
     },
     "files": [
+      "./dist/electron/main.js",
+      "./build/**/*",
       "dist/electron/**/*"
     ],
     "dmg": {
@@ -110,7 +112,7 @@
     "css-loader": "^0.28.11",
     "del": "^3.0.0",
     "devtron": "^1.4.0",
-    "electron-builder": "^20.19.2",
+    "electron-builder": "^20.23.1",
     "electron-debug": "^1.4.0",
     "electron-devtools-installer": "^2.2.4",
     "eslint": "^4.19.1",
@@ -144,11 +146,11 @@
     "vue-html-loader": "^1.2.4",
     "vue-i18n-loader": "^1.0.0",
     "vue-loader": "^14.2.2",
-    "vue-style-loader": "^4.1.0",
+    "vue-style-loader": "^4.1.1",
     "vue-template-compiler": "^2.4.2",
     "webpack": "^3.12.0",
     "webpack-dev-server": "^2.7.1",
-    "webpack-hot-middleware": "^2.22.2",
+    "webpack-hot-middleware": "^2.22.3",
     "webpack-merge": "^4.1.0"
   }
 }
