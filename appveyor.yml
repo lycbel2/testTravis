@@ -29,11 +29,10 @@ install:
 build_script:
   #- yarn test
   - yarn build
+  - dir win-unpacked/resources
 
 test: off
 
-after_build:
-  - dir
 artifacts:
   - path: 'build\*Setup*.exe'
 
