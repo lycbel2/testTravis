@@ -113,7 +113,7 @@ const UpdaterFactory = (function () {
         }
       });
       autoUpdater.on('error', (err) => {
-        log.info(`update available ${err.stack}`);
+        log.info(`update error: ${err.stack}`);
         THIS.alreadyInUpdate = false;
         THIS.sendStatusToWindow(`error-in-auto-updater#${err}`);
       });

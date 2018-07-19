@@ -23,8 +23,6 @@
       });
     },
     updated() {
-      const elem = this.$refs.showWindow;
-      elem.scrollTop = elem.clientHeight;
     },
     methods: {
       doSome() {
@@ -37,7 +35,7 @@
 <style lang="scss">
 .content {
     position: absolute;
-    width: 100px;
+    width: 50%;
     height: 100%;
     z-index: 5;
     top: 0px;
