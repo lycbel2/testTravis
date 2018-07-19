@@ -1,12 +1,11 @@
 import UpdateStrategyHelper from './UpdateHelper.js';
 import { ipcMain, dialog } from 'electron'; // eslint-disable-line
-console.log(UpdateStrategyHelper);
+import { RenderNotifier } from './UpdateMessager';
 const Promise = require('bluebird');
 const { CancellationToken } = require('electron-builder-http');
 const log = require('electron-log');
 const { autoUpdater } = require('electron-updater');
 const autoUpdateString = 'autoUpdatString_random_olapxsdf#@%';
-let THIS;
 
 function setAutoUpdater() {
   autoUpdater.autoDownload = true; // when the update is available, it will download automatically
@@ -19,7 +18,7 @@ const UpdaterFactory = (function () {
   let instance = null;
   class Updater {
     constructor(window, app) {
-      THIS = this;
+      this.renderNotifier = new RenderNotifier(this);
       this.updateStrategyHelper = new UpdateStrategyHelper(autoUpdateString);
       this.alreadyInUpdate = false;
       this.menuallyStarted = false;
@@ -37,6 +36,7 @@ const UpdaterFactory = (function () {
       return new Promise((resolve) => {
         setAutoUpdater();
         this.updateStrategyHelper.getStrategyStorage().then(() => {
+          console.log(this.updateStrategyHelper.AutoCheck);
           if (this.updateStrategyHelper.AutoCheck) {
             resolve(this.startUpdateCheck());
           } else {
@@ -51,12 +51,10 @@ const UpdaterFactory = (function () {
       this.close = true;
       return this.updateStrategyHelper.storeToLocal();
     }
-
     // it should be called when user check update manually
     startUpdateManually() {
-      const backObjT = this;
       return new Promise((resolve) => {
-        backObjT.menuallyStarted = true;
+        this.menuallyStarted = true;
         resolve(this.startUpdateCheck());
       });
     }
@@ -75,7 +73,7 @@ const UpdaterFactory = (function () {
         autoUpdater.logger = log;
         autoUpdater.logger.transports.file.level = 'info';
         log.info('update checking started');
-        this.registerMessageHandlerForUpdater();
+        this.registerHandlerOfMessageFromUpdater();
         this.registerMessageHandlerForIPCMain();
         resolve(autoUpdater.checkForUpdates());
       });
@@ -91,41 +89,41 @@ const UpdaterFactory = (function () {
       }
     }
 
-    registerMessageHandlerForUpdater() {
+    registerHandlerOfMessageFromUpdater() {
       autoUpdater.on('checking-for-update', () => {
         this.sendStatusToWindow('Checking for update...');
       });
       autoUpdater.on('update-available', (info) => {
         log.info(`update available ${JSON.stringify(info)}`);
-        if (THIS.isUpdateProper(info)) {
-          THIS.hasUpdate = true;
+        if (this.isUpdateProper(info)) {
+          this.hasUpdate = true;
           this.sendStatusToWindow(`${JSON.stringify(info)}Update available.`);
         } else {
-          THIS.hasUpdate = false;
+          this.hasUpdate = false;
         }
       });
       autoUpdater.on('update-not-available', (info) => {
         log.info(`update not available ${JSON.stringify(info)}`);
-        THIS.hasUpdate = false;
-        THIS.alreadyInUpdate = false;
-        if (THIS.menuallyStarted) {
-          THIS.sendStatusToWindow('update-not-available');
+        this.hasUpdate = false;
+        this.alreadyInUpdate = false;
+        if (this.menuallyStarted) {
+          this.sendStatusToWindow('update-not-available');
         }
       });
       autoUpdater.on('error', (err) => {
         log.info(`update error: ${err.stack}`);
-        THIS.alreadyInUpdate = false;
-        THIS.sendStatusToWindow(`error-in-auto-updater#${err}`);
+        this.alreadyInUpdate = false;
+        this.sendStatusToWindow(`error-in-auto-updater#${err}`);
       });
       autoUpdater.on('download-progress', (progressObj) => {
         let logMessage = `download-progress#download-speed:${progressObj.bytesPerSecond}`;
         logMessage = `${logMessage}&download-percentage:${progressObj.percent}%`;
         logMessage = `${logMessage}&download-total:${progressObj.total}`;
-        THIS.sendStatusToWindow(logMessage);
+        this.sendStatusToWindow(logMessage);
       });
       autoUpdater.on('update-downloaded', () => {
         log.info('update downloaded');
-        if (!THIS.updateStrategyHelper.AskQuitInstall) {
+        if (!this.updateStrategyHelper.AskQuitInstall) {
           autoUpdater.quitAndInstall(true, true);
         } else {
           // todo multi language
@@ -136,7 +134,7 @@ const UpdaterFactory = (function () {
             message: 'Unsaved data will be lost. Are you sure you want to quit?',
           }, (response) => {
             if (response === 0) { // Runs the following if 'Yes' is clicked
-              THIS.app.showExitPrompt = false;
+              this.app.showExitPrompt = false;
               autoUpdater.quitAndInstall(true, true);
             }
           });
@@ -162,7 +160,7 @@ const UpdaterFactory = (function () {
     registerMessageHandlerForIPCMain() { // eslint-disable-line
       ipcMain.on('cancel-update', (event, arg) => {
         console.log(arg);
-        THIS.cancelUpdate();
+        this.cancelUpdate();
       });
       ipcMain.on('update-setting', (event, arg) => { // arg {'':bool,'':bool....}
         this.setStrategy(arg);
@@ -171,9 +169,9 @@ const UpdaterFactory = (function () {
         console.log(arg);
         this.startUpdateManually().then((err) => {
           if (err.toString() === 'already in use') {
-            THIS.sendStatusToWindow('update-manually#already-in-use');
+            this.sendStatusToWindow('update-manually#already-in-use');
           } else {
-            THIS.sendStatusToWindow('update-manually#other-error');
+            this.sendStatusToWindow('update-manually#other-error');
           }
         });
       });
@@ -192,6 +190,7 @@ const UpdaterFactory = (function () {
     }
   }
 
+
   return {
     getInstance(win, app) {
       if (instance) {
@@ -207,4 +206,3 @@ const UpdaterFactory = (function () {
   };
 }());
 export { UpdaterFactory as default };
-

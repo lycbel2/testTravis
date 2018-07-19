@@ -69,7 +69,7 @@ app.on('ready', () => {
   app.setName('SPlayerX');
   createWindow();
   updater = Updater.getInstance(mainWindow, app);
-  updater.onStart().then((err) => { console.log(err); });
+  updater.onStart().then((err) => { console.log(`lalalalallallalalap-------${err}`); });
 });
 
 app.on('window-all-closed', () => {

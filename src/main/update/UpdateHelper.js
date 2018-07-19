@@ -5,12 +5,13 @@ const defultStorageSetting = { autoCheck: true, askDownload: false, askQuitInsta
 function isUndefined(object) {
   return typeof object !== 'undefined';
 }
-
+let THIS;
 export default class UpdateStrategyHelper {
   constructor(updaterStrategyString) {
     this.uss = updaterStrategyString;
     // in format {'autoCheck':bool,'askDownload':bool,'askQuitInstall':bool} default true,false,true
     this.updateStrategy = null;
+    THIS = this;
   }
   get AutoCheck() {
     return this.updateStrategy.autoCheck;
@@ -33,19 +34,19 @@ export default class UpdateStrategyHelper {
   }
 
   getStrategyStorage() {
-    const backOb = this;
     return new Promise((resolve, reject) => {
+      console.log('u suck');
       storage.get(this.uss, (err, data) => {
         if (err) {
-          const logMessage = `Download speed: ${this.uss}`;
-          console.log(logMessage);
           // todo when err maybe need a temp setting
           reject(err);
         } else if (isUndefined(data) || data == null) {
-          backOb.updateStrategy = defultStorageSetting;
+          console.log('lyc kyc');
+          THIS.updateStrategy = defultStorageSetting;
           resolve();
         } else {
-          backOb.updateStrategy = UpdateStrategyHelper.getStrategyFromString(data);
+          console.log('lyc kyc');
+          THIS.updateStrategy = UpdateStrategyHelper.getStrategyFromString(data);
           resolve();
         }
       });
