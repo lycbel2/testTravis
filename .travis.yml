@@ -26,7 +26,7 @@ before_script:
 script:
 - npm run build
 - ls build
-- ls
+- ls build/mac/Resources
 - pwd
 deploy:
   provider: releases
