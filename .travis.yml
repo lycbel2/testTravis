@@ -24,7 +24,7 @@ before_script:
 - export DISPLAY=:99.0
 - if [ $TRAVIS_OS_NAME == "linux" ]; then sh -e /etc/init.d/xvfb start; sleep 3; fi
 script:
-- npm run build
+- npm run mybuild
 - ls build
 - ls -R build
 - pwd
