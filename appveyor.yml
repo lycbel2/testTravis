@@ -34,6 +34,12 @@ build_script:
 test: off
 
 artifacts:
+  - path: 'build\*Setup*.exe'
+
+  - path: 'build\*.zip'
+
+  - path: 'build\*exe.blockmap'
+
   - path: 'build\latest.yml'
 environment:
   GH_TOKEN:
