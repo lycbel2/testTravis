@@ -14,7 +14,7 @@ cache:
   - node_modules
   - "$HOME/.electron"
 before_install:
-- bash test/ci/before_install.sh
+
 install:
 - npm install codecov
 - npm install electron-mocha
@@ -24,8 +24,7 @@ before_script:
 - export DISPLAY=:99.0
 - if [ $TRAVIS_OS_NAME == "linux" ]; then sh -e /etc/init.d/xvfb start; sleep 3; fi
 script:
-- npm run mybuild
-- npm
+- npm run build
 - ls build
 - ls -R build
 - npm view electron-updater
@@ -35,12 +34,12 @@ deploy:
   file_glob: true
   overwrite: true
   file:
-  - build/mac/*
   - build/*.dmg
   - build/*.deb
   - build/*.rpm
   - build/latest-mac.yml
   - build/*.blockmap
+  - build/*.zip
   skip_cleanup: true
   on:
     tags: true

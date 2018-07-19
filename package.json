@@ -2,7 +2,7 @@
   "name": "TestTravis",
   "productName": "TestTravis",
   "homepage": "https://splayer.org",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "author": "tomasen <tomasen@gmail.com>",
   "description": "a media player",
   "license": null,
@@ -29,7 +29,14 @@
   },
   "build": {
     "productName": "testTravis",
-    "appId": "org.splayer.x",
+    "appId": "org.testTravis.x",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "lycbel2",
+        "repo": "testTravis"
+      }
+    ],
     "directories": {
       "output": "build"
     },
