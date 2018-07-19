@@ -35,12 +35,16 @@ test: off
 artifacts:
   - path: 'build\*Setup*.exe'
 
+  - path: 'build\*exe.blockmap'
+
+  - path: 'build\*.yml'
+
 deploy:
   release: $(appveyor_repo_tag_name)
   description: 'Release description'
   provider: GitHub
   auth_token:
-    secure: FDmfArc1K2R+cNHd7SUHpaT3HeZjI3re7YlVr0paJ4sxDkaAR7VwxTRnlTsaCGeJ # your encrypted token from GitHub
+    secure: uSc2xAMUgS8iIOy8RSx2nhUiMgQeVCKZsX1bNfwsNu0SxkJoZWb0ceqXEy3v9/cu # your encrypted token from GitHub
   artifact:
   draft: false
   prerelease: false
