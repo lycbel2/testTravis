@@ -7,6 +7,7 @@ npm-debug.log
 npm-debug.log.*
 thumbs.db
 package-lock.json
+dist
 !.gitkeep
 .idea
 
