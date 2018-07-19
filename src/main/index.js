@@ -68,7 +68,6 @@ function createWindow() {
 app.on('ready', () => {
   app.setName('SPlayerX');
   createWindow();
-  console.log();
   updater = Updater.getInstance(mainWindow, app);
   updater.onStart().then((err) => { console.log(err); });
 });

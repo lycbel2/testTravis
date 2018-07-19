@@ -37,7 +37,7 @@ artifacts:
 
   - path: 'build\*exe.blockmap'
 
-  - path: 'build\*.yml'
+  - path: 'build\latest.yml'
 
 deploy:
   release: $(appveyor_repo_tag_name)

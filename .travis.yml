@@ -26,6 +26,9 @@ before_script:
 script:
 - npm run unit
 - npm run build
+- ls build
+- ls
+- pwd
 deploy:
   provider: releases
   name: "$TRAVIS_TAG"
@@ -36,7 +39,7 @@ deploy:
   - build/*.dmg
   - build/*.deb
   - build/*.rpm
-  - build/*.yml
+  - build/latest-mac.yml
   - build/*.blockmap
   skip_cleanup: true
   on:
