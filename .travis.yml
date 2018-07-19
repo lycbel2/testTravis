@@ -25,9 +25,10 @@ before_script:
 - if [ $TRAVIS_OS_NAME == "linux" ]; then sh -e /etc/init.d/xvfb start; sleep 3; fi
 script:
 - npm run mybuild
+- npm
 - ls build
 - ls -R build
-- pwd
+- npm view electron-updater
 deploy:
   provider: releases
   name: "$TRAVIS_TAG"

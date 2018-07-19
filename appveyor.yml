@@ -29,6 +29,7 @@ install:
 build_script:
   #- yarn test
   - yarn build
+  - dir /s
 
 test: off
 
