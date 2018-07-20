@@ -34,8 +34,7 @@
       {
         "provider": "github",
         "owner": "lycbel2",
-        "repo": "testTravis",
-        never
+        "repo": "testTravis"
 
       }
     ],
