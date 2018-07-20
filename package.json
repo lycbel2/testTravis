@@ -2,7 +2,7 @@
   "name": "TestTravis",
   "productName": "TestTravis",
   "homepage": "https://splayer.org",
-  "version": "0.3.9",
+  "version": "0.4.0",
   "author": "tomasen <tomasen@gmail.com>",
   "description": "a media player",
   "license": null,

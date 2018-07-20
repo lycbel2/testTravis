@@ -26,8 +26,6 @@ before_script:
 script:
 - npm run build
 - ls build
-- ls -R build
-- npm view electron-updater
 deploy:
   provider: releases
   name: "$TRAVIS_TAG"

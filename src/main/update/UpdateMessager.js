@@ -10,30 +10,48 @@ export class RenderNotifier {
   }
 
   updateAvailable() {
-    this.updater.sendStatusToWindow('update-AVB');
+    this.updater.sendStatusToWindow('AVB');
   }
 
   updateNotAvailable() {
-    this.updater.sendStatusToWindow('update-not-AVB');
+    this.updater.sendStatusToWindow('notAVB');
   }
 
   updateDownloaded() {
-    this.updater.sendStatusToWindow('update-downloaded');
+    this.updater.sendStatusToWindow('downloaded');
   }
 
   alreadyInupdate() {
-    this.updater.sendStatusToWindow('update-already-in');
+    this.updater.sendStatusToWindow('alreadyInUpdate');
   }
 
   updateDownloadStatus(status) {
-    this.updater.sendStatusToWindow(`update-status#${status}`);
+    this.updater.sendStatusToWindow(`updateStatus#${status}`);
   }
 
   sendUpdateStrategy(stragety) {
-    this.updater.sendStatusToWindow(`update-strategy#${stragety}`);
+    this.updater.sendStatusToWindow(`updateStrategy#${stragety}`);
   }
 }
 
 export class updaterNotifier {
+  constructor(rendererWindowObject) {
+    this.render = rendererWindowObject;
+  }
 
+  askStrategy() {
+    this.render.sendToMain();
+  }
+
+  cancelUpdate() {
+    this.render.sendStatusToWindow();
+  }
+
+  manuallyUpdate() {
+    this.render.sendStatusToWindow();
+  }
+
+  setStrategy() {
+    this.render.sendStatusToWindow();
+  }
 }

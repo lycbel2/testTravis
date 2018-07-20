@@ -68,8 +68,16 @@ function createWindow() {
 app.on('ready', () => {
   app.setName('SPlayerX');
   createWindow();
-  updater = Updater.getInstance(mainWindow, app);
-  updater.onStart().then((err) => { console.log(`lalalalallallalalap-------${err}`); });
+  try {
+    updater = Updater.getInstance(mainWindow, app);
+  } catch (e) {
+    console.log('lls');
+  }
+  updater.onStart().catch((err) => {
+    // todo to handel different error
+    console.log(`update err ${err}`);
+    Updater.ulog(`update err at start: ${err}`);
+  }).then(() => { console.log('successfully started'); });
 });
 
 app.on('window-all-closed', () => {

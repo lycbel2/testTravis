@@ -1,4 +1,4 @@
-import UpdateStrategyHelper from './UpdateHelper.js';
+import { UpdateStrategyHelperForMain as UpdateStrategyHelper } from './UpdateHelper.js';
 import { ipcMain, dialog } from 'electron'; // eslint-disable-line
 import { RenderNotifier } from './UpdateMessager';
 const Promise = require('bluebird');
@@ -40,7 +40,7 @@ const UpdaterFactory = (function () {
           if (this.updateStrategyHelper.AutoCheck) {
             resolve(this.startUpdateCheck());
           } else {
-            resolve();
+            resolve('did not check update');
           }
         });
       });
@@ -192,6 +192,9 @@ const UpdaterFactory = (function () {
 
 
   return {
+    ulog(object) {
+      log.info(object.toString());
+    },
     getInstance(win, app) {
       if (instance) {
         if (win && app) {

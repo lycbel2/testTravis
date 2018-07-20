@@ -5,13 +5,19 @@ const defultStorageSetting = { autoCheck: true, askDownload: false, askQuitInsta
 function isUndefined(object) {
   return typeof object !== 'undefined';
 }
-let THIS;
-export default class UpdateStrategyHelper {
-  constructor(updaterStrategyString) {
-    this.uss = updaterStrategyString;
-    // in format {'autoCheck':bool,'askDownload':bool,'askQuitInstall':bool} default true,false,true
+
+export class UpdaterStrategy {
+  constructor() {
     this.updateStrategy = null;
-    THIS = this;
+  }
+  toString() {
+    return (`${JSON.stringify(this.updateStrategy)}`);
+  }
+  fromString(content) {
+    this.updateStrategy = JSON.parse(content);
+  }
+  get IsUndefined() {
+    return this.updateStrategy == null;
   }
   get AutoCheck() {
     return this.updateStrategy.autoCheck;
@@ -32,7 +38,16 @@ export default class UpdateStrategyHelper {
   set AskQuitInstall(bool) {
     this.updateStrategy.askQuitInstall = bool;
   }
+}
 
+
+export class UpdateStrategyHelperForMain extends UpdaterStrategy {
+  constructor(updaterStrategyString) {
+    super();
+    this.uss = updaterStrategyString;
+    // in format {'autoCheck':bool,'askDownload':bool,'askQuitInstall':bool} default true,false,true
+    this.updateStrategy = null;
+  }
   getStrategyStorage() {
     return new Promise((resolve, reject) => {
       console.log('u suck');
@@ -42,22 +57,19 @@ export default class UpdateStrategyHelper {
           reject(err);
         } else if (isUndefined(data) || data == null) {
           console.log('lyc kyc');
-          THIS.updateStrategy = defultStorageSetting;
+          this.updateStrategy = defultStorageSetting;
           resolve();
         } else {
+          this.updateStrategy = this.fromString(data);
           console.log('lyc kyc');
-          THIS.updateStrategy = UpdateStrategyHelper.getStrategyFromString(data);
           resolve();
         }
       });
     });
   }
 
-  static getStrategyFromString(strategyString) {
-    return JSON.parse(strategyString);
-  }
+
   storeToLocal() {
     return storage.setAsync(this.uss, JSON.stringify(this.updateStrategy));
   }
 }
-
