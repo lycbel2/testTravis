@@ -2,14 +2,14 @@
   "name": "TestTravis",
   "productName": "TestTravis",
   "homepage": "https://splayer.org",
-  "version": "0.4.0",
+  "version": "0.1.5",
   "author": "tomasen <tomasen@gmail.com>",
   "description": "a media player",
   "license": null,
   "main": "./dist/electron/main.js",
   "scripts": {
     "mybuild": "build -m",
-    "build": "node .electron-vue/build.js && cross-env DEBUG=electron-download electron-builder",
+    "build": "node .electron-vue/build.js --publish never && cross-env DEBUG=electron-download electron-builder",
     "build:dir": "node .electron-vue/build.js && electron-builder --dir",
     "build:clean": "cross-env BUILD_TARGET=clean node .electron-vue/build.js",
     "build:web": "cross-env BUILD_TARGET=web node .electron-vue/build.js",
@@ -34,7 +34,9 @@
       {
         "provider": "github",
         "owner": "lycbel2",
-        "repo": "testTravis"
+        "repo": "testTravis",
+        never
+
       }
     ],
     "directories": {
@@ -104,7 +106,7 @@
     "vuex": "^3.0.1"
   },
   "devDependencies": {
-    "@chiflix/electron": "^2.0.2",
+    "@chiflix/electron": "^2.0.5",
     "babel-core": "^6.26.3",
     "babel-eslint": "^8.2.3",
     "babel-loader": "^7.1.1",
@@ -129,7 +131,7 @@
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-friendly-formatter": "^4.0.1",
     "eslint-import-resolver-webpack": "^0.8.4",
-    "eslint-loader": "^2.0.0",
+    "eslint-loader": "^2.1.0",
     "eslint-plugin-html": "^4.0.3",
     "eslint-plugin-import": "^2.12.0",
     "extract-text-webpack-plugin": "^3.0.0",

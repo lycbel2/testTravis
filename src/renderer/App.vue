@@ -8,6 +8,9 @@
 
 <script>
   import UpdaterProgressIndicator from './components/UpdaterView/UpdaterProgressIndicator.vue';
+  import { UpdaterStrategy } from '../main/update/UpdateHelper.js';
+  const updater = new UpdaterStrategy();
+  updater.setStrategy('123');
   export default {
     components: {
       UpdaterProgressIndicator,

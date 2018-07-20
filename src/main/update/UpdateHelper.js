@@ -10,6 +10,21 @@ export class UpdaterStrategy {
   constructor() {
     this.updateStrategy = null;
   }
+
+  setStrategy(arg) {
+    if (!arg) {
+      return;
+    }
+    if (arg.autoCheck) {
+      this.AutoCheck = arg.autoCheck;
+    }
+    if (arg.askDownload) {
+      this.AskDownload = arg.askDownload;
+    }
+    if (arg.askQuitInstall) {
+      this.AskQuitInstall = arg.askQuitInstall;
+    }
+  }
   toString() {
     return (`${JSON.stringify(this.updateStrategy)}`);
   }

@@ -18,6 +18,7 @@ const UpdaterFactory = (function () {
   let instance = null;
   class Updater {
     constructor(window, app) {
+      this.currentUpdateInfo = null; // todo in future
       this.renderNotifier = new RenderNotifier(this);
       this.updateStrategyHelper = new UpdateStrategyHelper(autoUpdateString);
       this.alreadyInUpdate = false;
@@ -95,7 +96,7 @@ const UpdaterFactory = (function () {
       });
       autoUpdater.on('update-available', (info) => {
         log.info(`update available ${JSON.stringify(info)}`);
-        if (this.isUpdateProper(info)) {
+        if (this.checkUpdateInfo(info)) {
           this.hasUpdate = true;
           this.sendStatusToWindow(`${JSON.stringify(info)}Update available.`);
         } else {
@@ -142,28 +143,13 @@ const UpdaterFactory = (function () {
       });
     }
 
-    setStrategy(arg) {
-      if (!arg) {
-        return;
-      }
-      if (arg.autoCheck) {
-        this.updateStrategyHelper.AutoCheck = arg.autoCheck;
-      }
-      if (arg.askDownload) {
-        this.updateStrategyHelper.AskDownload = arg.askDownload;
-      }
-      if (arg.askQuitInstall) {
-        this.updateStrategyHelper.AskQuitInstall = arg.askQuitInstall;
-      }
-    }
-
-    registerMessageHandlerForIPCMain() { // eslint-disable-line
+    registerMessageHandlerForIPCMain() {
       ipcMain.on('cancel-update', (event, arg) => {
         console.log(arg);
         this.cancelUpdate();
       });
       ipcMain.on('update-setting', (event, arg) => { // arg {'':bool,'':bool....}
-        this.setStrategy(arg);
+        this.updateStrategyHelper.setStrategy(arg);
       });
       ipcMain.on('update-manually', (event, arg) => {
         console.log(arg);
@@ -177,9 +163,16 @@ const UpdaterFactory = (function () {
       });
     }
 
-    isUpdateProper(updateInfo) { // eslint-disable-line
+    /*
+     * for the future maybe
+     * distribute update partially
+     * based on version and platform to decide update or not
+     */
+    checkUpdateInfo(updateInfo) { // eslint-disable-line
       // todo
+      this.currentUpdateInfo = '';
       updateInfo.toString();
+      // compare(this.currentUpdateInfo, updateInfo);
       return true;
     }
     set Window(win) {
