@@ -76,7 +76,6 @@ app.on('ready', () => {
   updater.onStart().catch((err) => {
     // todo to handel different error
     console.log(`update err ${err}`);
-    Updater.ulog(`update err at start: ${err}`);
   }).then(() => { console.log('successfully started'); });
 });
 

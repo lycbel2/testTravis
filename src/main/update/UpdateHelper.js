@@ -1,3 +1,5 @@
+import { RenderMessageHelper } from './UpdateMessager';
+const autoUpdateString = 'autoUpdatString_random_olapxsdf#@%';
 const Promise = require('bluebird');
 const storage = require('electron-json-storage');
 Promise.promisifyAll(storage);
@@ -29,44 +31,50 @@ export class UpdaterStrategy {
     return (`${JSON.stringify(this.updateStrategy)}`);
   }
   fromString(content) {
+    if (content == null || content === 'null') {
+      return;
+    }
     this.updateStrategy = JSON.parse(content);
   }
   get IsUndefined() {
     return this.updateStrategy == null;
   }
   get AutoCheck() {
-    return this.updateStrategy.autoCheck;
+    return (this.IsUndefined ? null : this.updateStrategy.autoCheck);
   }
   get AskDownload() {
-    return this.updateStrategy.askDownload;
+    return (this.IsUndefined ? null : this.updateStrategy.askDownload);
   }
   get AskQuitInstall() {
-    return this.updateStrategy.askQuitInstall;
+    return (this.IsUndefined ? null : this.updateStrategy.askQuitInstall);
   }
 
   set AutoCheck(bool) {
-    this.updateStrategy.autoCheck = bool;
+    if (!this.IsUndefined) {
+      this.updateStrategy.autoCheck = bool;
+    }
   }
   set AskDownload(bool) {
-    this.updateStrategy.askDownload = bool;
+    if (!this.IsUndefined) {
+      this.updateStrategy.askDownload = bool;
+    }
   }
   set AskQuitInstall(bool) {
-    this.updateStrategy.askQuitInstall = bool;
+    if (!this.IsUndefined) {
+      this.updateStrategy.askQuitInstall = bool;
+    }
   }
 }
 
 
 export class UpdateStrategyHelperForMain extends UpdaterStrategy {
-  constructor(updaterStrategyString) {
+  constructor(updater) {
     super();
-    this.uss = updaterStrategyString;
-    // in format {'autoCheck':bool,'askDownload':bool,'askQuitInstall':bool} default true,false,true
-    this.updateStrategy = null;
+    this.updater = updater;
   }
   getStrategyStorage() {
     return new Promise((resolve, reject) => {
-      console.log('u suck');
-      storage.get(this.uss, (err, data) => {
+      storage.get(autoUpdateString, (err, data) => {
         if (err) {
           // todo when err maybe need a temp setting
           reject(err);
@@ -82,9 +90,36 @@ export class UpdateStrategyHelperForMain extends UpdaterStrategy {
       });
     });
   }
-
+  setStrategy(arg) {
+    return new Promise((resolve) => {
+      super.setStrategy(arg);
+      resolve(this.storeToLocal());
+    });
+  }
 
   storeToLocal() {
-    return storage.setAsync(this.uss, JSON.stringify(this.updateStrategy));
+    return storage.setAsync(autoUpdateString, JSON.stringify(this.updateStrategy));
+  }
+}
+
+
+export class UpdateHelperForRender extends UpdaterStrategy {
+  constructor(IpcRender, vueObject) {
+    super();
+    this.ipcrender = IpcRender;
+    this.vueObject = vueObject;
+    this.updateMessageHelper = new RenderMessageHelper(this); // need check lyc
+  }
+
+  askStrategy() {
+    this.updateMessageHelper.notifier.askStrategy();
+  }
+
+  askSetStrategy() {
+    this.updateMessageHelper.notifier.setStrategy();
+  }
+
+  askCancelUpdate() {
+    this.updateMessageHelper.notifier.cancelUpdate();
   }
 }
