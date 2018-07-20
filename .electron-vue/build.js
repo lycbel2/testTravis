@@ -50,6 +50,7 @@ function build () {
   })
 
   pack(mainConfig).then(result => {
+    console.log(`\n\n\${results}`)
     results += result + '\n\n'
     m.success('main')
   }).catch(err => {

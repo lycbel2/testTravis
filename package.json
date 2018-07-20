@@ -2,14 +2,15 @@
   "name": "TestTravis",
   "productName": "TestTravis",
   "homepage": "https://splayer.org",
-  "version": "0.1.5",
+  "version": "0.4.1",
   "author": "tomasen <tomasen@gmail.com>",
   "description": "a media player",
   "license": null,
   "main": "./dist/electron/main.js",
   "scripts": {
+    "mybuild2": "electron-builder --p never",
     "mybuild": "build -m",
-    "build": "node .electron-vue/build.js --publish never && cross-env DEBUG=electron-download electron-builder",
+    "build": "node .electron-vue/build.js  && cross-env DEBUG=electron-download electron-builder --p never",
     "build:dir": "node .electron-vue/build.js && electron-builder --dir",
     "build:clean": "cross-env BUILD_TARGET=clean node .electron-vue/build.js",
     "build:web": "cross-env BUILD_TARGET=web node .electron-vue/build.js",
@@ -35,7 +36,6 @@
         "provider": "github",
         "owner": "lycbel2",
         "repo": "testTravis"
-
       }
     ],
     "directories": {
@@ -123,7 +123,7 @@
     "css-loader": "^0.28.11",
     "del": "^3.0.0",
     "devtron": "^1.4.0",
-    "electron-builder": "^20.23.1",
+    "electron-builder": "^20.19.2",
     "electron-debug": "^1.4.0",
     "electron-devtools-installer": "^2.2.4",
     "eslint": "^4.19.1",
