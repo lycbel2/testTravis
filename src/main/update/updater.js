@@ -1,11 +1,9 @@
-import { UpdateStrategyHelperForMain as UpdateStrategyHelper } from './UpdateHelper.js';
-import { UpdaterMessageHelper } from './UpdateMessagerHelper.js';
 import { ipcMain, dialog } from 'electron'; // eslint-disable-line
 const Promise = require('bluebird');
 const { CancellationToken } = require('electron-builder-http');
 const log = require('electron-log');
 const { autoUpdater } = require('electron-updater');
-
+const defultStorageSetting = { autoCheck: true, askDownload: false, askQuitInstall: true };
 function setAutoUpdater() {
   autoUpdater.autoDownload = true; // when the update is available, it will download automatically
   // if user does not install downloaded app, it will auto install when quit the app
@@ -23,10 +21,7 @@ const UpdaterFactory = (function () {
       this.currentUpdateInfo = null; // todo in future
       this.ipcMain = ipcMain;
       this.alreadyInUpdate = false;
-      this.menuallyStarted = false;
       this.cancellationToken = new CancellationToken();
-      this.updateStrategyHelper = new UpdateStrategyHelper(this);
-      this.updateMessageHelper = new UpdaterMessageHelper(this);
       // check if auto updater module available
       if (!autoUpdater) {
         return null;
@@ -38,20 +33,6 @@ const UpdaterFactory = (function () {
     onStart() {
       return new Promise((resolve) => {
         setAutoUpdater();
-        this.updateStrategyHelper.getStrategyStorage().then(() => {
-          console.log(this.updateStrategyHelper.AutoCheck);
-          if (this.updateStrategyHelper.AutoCheck) {
-            resolve(this.startUpdateCheck());
-          } else {
-            resolve('auto check disabled');
-          }
-        });
-      });
-    }
-    // it should be called when user check update manually
-    startUpdateManually() {
-      return new Promise((resolve) => {
-        this.menuallyStarted = true;
         resolve(this.startUpdateCheck());
       });
     }
@@ -92,9 +73,9 @@ const UpdaterFactory = (function () {
       autoUpdater.on('update-available', (info) => {
         ulog(`update available ${JSON.stringify(info)}`);
         if (this.checkUpdateInfo(info)) {
-          this.updateMessageHelper.notifier.updateAvailable(JSON.stringify(info));
+          this.sendStatusToWindow(JSON.stringify(info));
         } else {
-          this.updateMessageHelper.notifier.updateNotAvailable();
+          this.sendStatusToWindow('not proper update');
         }
       });
 
