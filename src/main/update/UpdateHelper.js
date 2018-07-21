@@ -1,4 +1,4 @@
-import { RenderMessageHelper } from './UpdateMessager';
+import { RenderMessageHelper } from './UpdateMessagerHelper';
 const autoUpdateString = 'autoUpdatString_random_olapxsdf#@%';
 const Promise = require('bluebird');
 const storage = require('electron-json-storage');
@@ -103,7 +103,7 @@ export class UpdateStrategyHelperForMain extends UpdaterStrategy {
 }
 
 
-export class UpdateHelperForRender extends UpdaterStrategy {
+export class UpdaterInRender extends UpdaterStrategy {
   constructor(IpcRender, vueObject) {
     super();
     this.ipcrender = IpcRender;
@@ -111,6 +111,9 @@ export class UpdateHelperForRender extends UpdaterStrategy {
     this.updateMessageHelper = new RenderMessageHelper(this); // need check lyc
   }
 
+  /*
+   * ask will be called in the render process
+   */
   askStrategy() {
     this.updateMessageHelper.notifier.askStrategy();
   }
@@ -121,5 +124,49 @@ export class UpdateHelperForRender extends UpdaterStrategy {
 
   askCancelUpdate() {
     this.updateMessageHelper.notifier.cancelUpdate();
+  }
+
+  askStartManuallyUpdate() {
+    this.updateMessageHelper.notifier.startManuallyUpdateCheck();
+  }
+
+  /*
+   * on will be called by the event listener in messageHelper
+   * for the vue object control only need to manipulate this part
+   */
+  onNotAvailable() {
+
+  }
+
+  onAvailable(updateInfo) {
+
+  }
+
+  onCancelUpdateSuccess() {
+
+  }
+
+  onCancelUpdateUnsuccessful(error) {
+
+  }
+
+  onDownloaded() {
+
+  }
+
+  onGotStrategyString(strategyString) {
+    this.fromString(strategyString);
+  }
+
+  onGotProcessStatusString(statusString) {
+
+  }
+
+  onAlreadyInUpdate(){
+
+  }
+
+  onManuallyUpdateOtherError(){
+
   }
 }

@@ -3,13 +3,13 @@
    * for the communication between render and main process within
    */
 
-export class RenderNotifier {
+class RenderNotifier {
   constructor(messageHelper) {
     this.updater = messageHelper.updater;
   }
 
-  updateAvailable() {
-    this.updater.sendStatusToWindow('AVB');
+  updateAvailable(updateInfo) {
+    this.updater.sendStatusToWindow(`AVB#${updateInfo}`);
   }
 
   updateNotAvailable() {
@@ -37,6 +37,14 @@ export class RenderNotifier {
 
   sendUpdateStrategy(strategy) {
     this.updater.sendStatusToWindow(`updateStrategy#${strategy}`);
+  }
+
+  updateCancelled() {
+    this.updater.sendStatusToWindow('updateCancelledSuccessfully');
+  }
+
+  updateCancelledUnSuccesfully(error) {
+    this.updater.sendStatusToWindow(`updateCancelledUnsuccessfully#${error}`);
   }
 
   // for test lyc.1
@@ -85,7 +93,6 @@ class RenderMessageReceiver {
   }
 }
 
-
 export class UpdaterMessageHelper {
   constructor(updater) {
     this.updater = updater;
@@ -102,41 +109,50 @@ export class UpdaterMessageHelper {
   }
 }
 
-
 class UpdaterMessageReceiver {
-  constructor(renderMessageHelper) {
-    this.helper = renderMessageHelper;
-    this.render = this.helper.render;
-    this.notifier = this.helper.notifier;
-    this.vueObject = this.helper.vueObject;
+  constructor(updaterInRender) {
+    this.updater = updaterInRender;
+    this.notifier = this.updaterInRender.notifier; // sometimes need to send message
   }
 
   receive(message) {
     const messageArray = message.split('#');
+    let error;
     switch (message) {
       // for test lyc.1
       case 'test':
-        this.vueObject.changeHello(555);
         break;
       // end test lyc.1
-      case 'AVB':
-        break;
       case 'notAVB':
+        this.updater.onNotAvailable();
         break;
       case 'downloaded':
+        this.updater.onDownloaded();
         break;
       case 'alreadyInUpdate':
+        this.updater.onAlreadyInUpdate();
         break;
       case 'MupOtherErr':
+        this.updater.onManuallyUpdateOtherError();
+        break;
+      case 'updateCancelledSuccessfully':
+        this.updater.onCancelUpdateSuccess();
         break;
       default:
         switch (messageArray[0]) {
+          case 'AVB':
+            this.updater.onAvailable(message.substring(4));
+            break;
           case 'updateStatus':
             // todo
+            this.updater.onGotProcessStatusString(message.substring(13));
             break;
           case 'updateStrategy':
-            this.helper.Strategy = message.substring(15);
-            this.vueObject.changeHello(this.helper.Strategy.toString());
+            this.updater.onGotStrategyString(message.substring(15));
+            break;
+          case 'updateCancelledUnsuccessfully':
+            error = message.substring('updateCancelledUnsuccessfully'.length + 1);
+            this.updater.onCancelUpdateUnsuccessful(error);
             break;
           default:
             break;
@@ -147,9 +163,8 @@ class UpdaterMessageReceiver {
 
 
 class UpdaterNotifier {
-  constructor(messageHelper, vueObject) {
+  constructor(messageHelper) {
     this.helper = messageHelper;
-    this.vueObject = vueObject;
   }
   // for test lyc.1
   doTest() {
@@ -173,8 +188,7 @@ export class RenderMessageHelper {
   constructor(renderHelper) {
     this.renderHelper = renderHelper;
     this.ipcrender = this.renderHelper.ipcrender;
-    this.vueObject = this.renderHelper.vueObject;
-    this.notifier = new UpdaterNotifier(this, this.vueObject);
+    this.notifier = new UpdaterNotifier(this);
     this.receiver = new UpdaterMessageReceiver(this);
     this.registerMessageListener();
   }

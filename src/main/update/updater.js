@@ -1,5 +1,5 @@
 import { UpdateStrategyHelperForMain as UpdateStrategyHelper } from './UpdateHelper.js';
-import { UpdaterMessageHelper } from './UpdateMessager.js';
+import { UpdaterMessageHelper } from './UpdateMessagerHelper.js';
 import { ipcMain, dialog } from 'electron'; // eslint-disable-line
 const Promise = require('bluebird');
 const { CancellationToken } = require('electron-builder-http');
@@ -43,15 +43,10 @@ const UpdaterFactory = (function () {
           if (this.updateStrategyHelper.AutoCheck) {
             resolve(this.startUpdateCheck());
           } else {
-            resolve('did not check update');
+            resolve('auto check disabled');
           }
         });
       });
-    }
-
-    // it should be called when the app closes will return a promise
-    onClose() {
-      return this.updateStrategyHelper.storeToLocal();
     }
     // it should be called when user check update manually
     startUpdateManually() {
@@ -97,7 +92,7 @@ const UpdaterFactory = (function () {
       autoUpdater.on('update-available', (info) => {
         ulog(`update available ${JSON.stringify(info)}`);
         if (this.checkUpdateInfo(info)) {
-          this.updateMessageHelper.notifier.updateNotAvailable();
+          this.updateMessageHelper.notifier.updateAvailable(JSON.stringify(info));
         } else {
           this.updateMessageHelper.notifier.updateNotAvailable();
         }

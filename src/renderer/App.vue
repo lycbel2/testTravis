@@ -9,7 +9,7 @@
 
 <script>
   import UpdaterProgressIndicator from './components/UpdaterView/UpdaterProgressIndicator.vue';
-  import { UpdateHelperForRender } from '../main/update/UpdateHelper.js';
+  import { UpdaterInRender } from '../main/update/UpdateHelper.js';
   export default {
     name: 'splayer',
     components: {
@@ -25,7 +25,7 @@
     },
     methods: {
       doit() {
-        const updater = new UpdateHelperForRender(this.$electron.ipcRenderer, this);
+        const updater = new UpdaterInRender(this.$electron.ipcRenderer, this);
         console.log(updater.toString());
         // updater.updateMessageHelper.notifier.doTest();
         updater.askStrategy();
