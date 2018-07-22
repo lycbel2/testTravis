@@ -32,7 +32,7 @@ build_script:
   #- yarn build
   - dir
 
-after_build
+after_build:
   - forfiles /P build /m *.exe /C "cmd /e:on /v:on /c set \"Phile=@file\" & if @ISDIR==FALSE ren @file !Phile: =_!"
 
 test: off
