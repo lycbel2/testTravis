@@ -28,14 +28,15 @@ install:
 
 build_script:
   #- yarn test
-  #- yarn build
+  - yarn build
   - dir
   - forfiles
 
 test: off
 
 after_build:
-  - cmd: 'forfiles  /P build /m *.exe /C "cmd /e:on /v:on /c set \"Phile=@file\" & if @ISDIR==FALSE ren @file !Phile: =_!"'
+  - cmd: 'forfiles  /P build /m *.block /C "cmd /e:on /v:on /c set \"Phile=@file\" & if @ISDIR==FALSE ren @file !Phile: =_!"'
+  - cmd: 'forfiles  /P build /m *.exe  /C "cmd /e:on /v:on /c set \"Phile=@file\" & if @ISDIR==FALSE ren @file !Phile: =_!"'
 
 artifacts:
   - path: 'build\*.exe'
