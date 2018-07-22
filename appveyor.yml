@@ -30,7 +30,7 @@ build_script:
   #- yarn test
   #- yarn build
   - dir
-  - cmd: forfiles /P build /m *.exe /C "cmd /e:on /v:on /c set \"Phile=@file\" & if @ISDIR==FALSE ren @file !Phile: =_!"
+  - forfiles /P build /m *.exe /C "cmd /e:on /v:on /c set \"Phile=@file\" & if @ISDIR==FALSE ren @file !Phile: =_!"
 
 test: off
 
