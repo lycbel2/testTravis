@@ -29,14 +29,13 @@ install:
 build_script:
   #- yarn test
   - yarn build
-  - forfiles /m *.exe /C "cmd /e:on /v:on /c set \"Phile=@file\" & if @ISDIR==FALSE ren @file !Phile: =_!"
+  - dir
+  - forfiles /P build /m *.exe /C "cmd /e:on /v:on /c set \"Phile=@file\" & if @ISDIR==FALSE ren @file !Phile: =_!"
 
 test: off
 
 artifacts:
-  - path: 'build\*Setup*.exe'
-
-  - path: 'build\*.zip'
+  - path: 'build\*.exe'
 
   - path: 'build\*exe.blockmap'
 
