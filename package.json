@@ -2,7 +2,7 @@
   "name": "TestTravis",
   "productName": "TestTravis",
   "homepage": "https://splayer.org",
-  "version": "0.4.12",
+  "version": "0.4.13",
   "author": "tomasen <tomasen@gmail.com>",
   "description": "a media player",
   "license": null,
@@ -106,7 +106,7 @@
     "vuex": "^3.0.1"
   },
   "devDependencies": {
-    "@chiflix/electron": "^2.0.5",
+    "@chiflix/electron": "^3.0.0-beta.3",
     "babel-core": "^6.26.3",
     "babel-eslint": "^8.2.3",
     "babel-loader": "^7.1.1",
