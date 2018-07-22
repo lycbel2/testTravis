@@ -10,7 +10,7 @@ platform:
   - x64
 
 configuration: Release
-
+skip_non_tags: true
 cache:
   #- node_modules
   #- '%APPDATA%\npm-cache'
