@@ -5,15 +5,11 @@ const { autoUpdater } = require('electron-updater');
 function setAutoUpdater() {
   autoUpdater.autoDownload = true; // when the update is available, it will download automatically
   // if user does not install downloaded app, it will auto install when quit the app
-  autoUpdater.autoInstallOnAppQuit = true;
+  autoUpdater.autoInstallOnAppQuit = false;
   autoUpdater.allowDowngrade = false;
 }
 
 const UpdaterFactory = (function () {
-  function ulog(object) {
-    this.sendStatusToWindow(object.toString());
-    log.info(object.toString());
-  }
   let instance = null;
   class Updater {
     constructor(window, app) {
@@ -38,7 +34,7 @@ const UpdaterFactory = (function () {
       return new Promise((resolve) => {
         autoUpdater.logger = log;
         autoUpdater.logger.transports.file.level = 'info';
-        ulog('update checking started');
+        this.log('update checking started');
         this.doUpdate().catch(() => { resolve('updateUnsuccessful'); }).then((info) => { resolve(info); });
       });
     }
@@ -56,30 +52,35 @@ const UpdaterFactory = (function () {
     doUpdate() {
       return new Promise((resolve, reject) => {
         const handleRejection = (err) => {
+          this.log(err);
           reject(err);
         };
         autoUpdater.on('checking-for-update', () => {
-          ulog('checking-for-update');
+          this.log('checking-for-update');
         });
         autoUpdater.on('update-available', (info) => {
-          ulog(`update available ${JSON.stringify(info)}`);
+          this.log(`update available ${JSON.stringify(info)}`);
           if (this.checkUpdateInfo(info)) {
             autoUpdater.downloadUpdate().catch(handleRejection);
           } else {
-            ulog('not proper update');
+            this.log('not proper update');
             resolve('updateNotAvailable');
           }
         });
 
         autoUpdater.on('update-not-available', (info) => {
           resolve('updateNotAvailable');
-          ulog(`update not available ${JSON.stringify(info)}`);
+          this.log(`update not available ${JSON.stringify(info)}`);
         });
         autoUpdater.on('error', (err) => {
-          ulog(`update error: ${err.stack}\n `);
+          console.log(err);
+          this.log(`update error: ${err.stack}\n `);
         });
         autoUpdater.on('download-progress', (progressObj) => {
-          this.sendStatusToWindow(JSON.stringify(progressObj));
+          let logMessage = `Download speed: ${progressObj.bytesPerSecond}`;
+          logMessage = `${logMessage} - Downloaded ${progressObj.percent}%`;
+          logMessage = `${logMessage} (${progressObj.transferred}/${progressObj.total})`;
+          this.sendStatusToWindow(logMessage);
         });
         autoUpdater.on('update-downloaded', () => {
           // todo multi language
@@ -120,11 +121,15 @@ const UpdaterFactory = (function () {
     get Window() {
       return this.win;
     }
+    log(object) {
+      this.sendStatusToWindow(object.toString());
+      log.info(object.toString());
+    }
   }
 
   return {
-    log() {
-      ulog();
+    ulog(object) {
+      log.info(object.toString());
     },
     getInstance(win, app) {
       if (instance) {
