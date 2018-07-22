@@ -20,6 +20,9 @@ cache:
 init:
   - ps: 'forfiles  /P build /m *.exe /C "cmd /e:on /v:on /c set \"Phile=@file\" & if @ISDIR==FALSE ren @file !Phile: =_!"'
   - git config --global core.autocrlf input
+  - forfiles
+  - mkdir hello
+  - echo sdf
 
 install:
   - ps: Install-Product node 9 x64
@@ -31,9 +34,7 @@ build_script:
   #- yarn test
   #- yarn build
   - dir
-
-after_build:
-  - cmd: forfiles /P build /m *.exe /C "cmd /e:on /v:on /c set \"Phile=@file\" & if @ISDIR==FALSE ren @file !Phile: =_!"
+  - forfiles
 
 test: off
 
