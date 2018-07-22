@@ -76,7 +76,7 @@ app.on('ready', () => {
   updater.onStart().catch((err) => {
     // todo to handel different error
     console.log(`update err ${err}`);
-  }).then(() => { console.log('successfully started'); });
+  }).then(() => { console.log(' successfully started'); });
 });
 
 app.on('window-all-closed', () => {
