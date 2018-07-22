@@ -24,9 +24,17 @@ const UpdaterFactory = (function () {
     }
     // it should be called when the app starts
     onStart() {
-      return new Promise((resolve) => {
-        setAutoUpdater();
-        resolve(this.startUpdate());
+      return new Promise((resolve, reject) => {
+        // todo need mutex
+        if (this.alreadyInUpdate) {
+          this.ulog('already');
+          reject(new Error('alreadyInupdate'));
+        } else {
+          this.alreadyInUpdate = true;
+
+          setAutoUpdater();
+          resolve(this.startUpdate());
+        }
       });
     }
 
@@ -34,7 +42,7 @@ const UpdaterFactory = (function () {
       return new Promise((resolve) => {
         autoUpdater.logger = log;
         autoUpdater.logger.transports.file.level = 'info';
-        this.log('update checking started');
+        this.ulog('update checking started');
         this.doUpdate().catch(() => { resolve('updateUnsuccessful'); }).then((info) => { resolve(info); });
       });
     }
@@ -52,29 +60,29 @@ const UpdaterFactory = (function () {
     doUpdate() {
       return new Promise((resolve, reject) => {
         const handleRejection = (err) => {
-          this.log(err);
+          this.ulog(err);
           reject(err);
         };
         autoUpdater.on('checking-for-update', () => {
-          this.log('checking-for-update');
+          this.ulog('checking-for-update');
         });
         autoUpdater.on('update-available', (info) => {
-          this.log(`update available ${JSON.stringify(info)}`);
+          this.ulog(`update available ${JSON.stringify(info)}`);
           if (this.checkUpdateInfo(info)) {
             autoUpdater.downloadUpdate().catch(handleRejection);
           } else {
-            this.log('not proper update');
+            this.ulog('not proper update');
             resolve('updateNotAvailable');
           }
         });
 
         autoUpdater.on('update-not-available', (info) => {
           resolve('updateNotAvailable');
-          this.log(`update not available ${JSON.stringify(info)}`);
+          this.ulog(`update not available ${JSON.stringify(info)}`);
         });
         autoUpdater.on('error', (err) => {
           console.log(err);
-          this.log(`update error: ${err.stack}\n `);
+          this.ulog(`update error: ${err.stack}\n `);
         });
         autoUpdater.on('download-progress', (progressObj) => {
           let logMessage = `Download speed: ${progressObj.bytesPerSecond}`;
@@ -121,7 +129,7 @@ const UpdaterFactory = (function () {
     get Window() {
       return this.win;
     }
-    log(object) {
+    ulog(object) {
       this.sendStatusToWindow(object.toString());
       log.info(object.toString());
     }

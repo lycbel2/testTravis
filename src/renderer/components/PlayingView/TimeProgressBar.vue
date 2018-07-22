@@ -178,7 +178,7 @@ export default {
     $_effectProgressBarDraged(e) {
       const cursorPosition = e.clientX - FOOL_PROOFING_BAR_WIDTH;
       this.cursorPosition = cursorPosition;
-      // console.log(this.cursorPosition);
+      // console.ulog(this.cursorPosition);
       if (cursorPosition < this.curProgressBarEdge) {
         this.isCursorLeft = true;
       } else {

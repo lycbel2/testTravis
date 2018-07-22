@@ -286,7 +286,7 @@ export default {
       // let shownTextTrack = false;
       // If there is already subtitle files(same dir), load it
       this.findSubtitleFilesByVidPath(decodeURI(vid.src), (subPath) => {
-        // console.log(subPath);
+        // console.ulog(subPath);
         // Automatically track and cleanup files at exit
         // temp.track();
         // const stream = temp.createWriteStream({ suffix: '.vtt' });
@@ -323,7 +323,7 @@ export default {
       // const sub0 = vid.addTextTrack('subtitles', 'splayer-custom');
 
       // if (process.env.NODE_ENV !== 'production') {
-      //   console.log(`loadingTextTrack ${loadingTextTrack}`);
+      //   console.ulog(`loadingTextTrack ${loadingTextTrack}`);
       //   if (!loadingTextTrack) {
       //     // Loading subtitle test
       //     const cue0 = new VTTCue(0, 30000, '字幕测试 Subtitle Test');
@@ -520,7 +520,7 @@ export default {
     // 需要对这一部分内容优化
     firstActiveCue(newVal) {
       this.firstCueHTML.pop();
-      // console.log(newVal);
+      // console.ulog(newVal);
       if (newVal) {
         // 这里对cue进行处理
         // 得到cue的line和position确定位置
@@ -530,7 +530,7 @@ export default {
     },
     secondActiveCue(newVal) {
       this.secondCueHTML.pop();
-      // console.log(newVal);
+      // console.ulog(newVal);
       if (newVal) {
         // 这里对cue进行处理
         // 得到cue的line和position确定位置
