@@ -17,7 +17,6 @@
     },
     mounted() {
       this.doSome();
-      this.$electron.ipcRenderer.send('update-back', 'hello');
       this.$electron.ipcRenderer.on('update-message', (event, text) => {
         this.content += text;
       });

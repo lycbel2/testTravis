@@ -1,6 +1,5 @@
 <template>
   <div id="app" class="application">
-    {{ hello }}
     <router-view></router-view>
     <UpdaterProgressIndicator> </UpdaterProgressIndicator>
   </div>
@@ -9,32 +8,10 @@
 
 <script>
   import UpdaterProgressIndicator from './components/UpdaterView/UpdaterProgressIndicator.vue';
-  import { UpdaterInRender } from '../main/update/UpdateHelper.js';
   export default {
     name: 'splayer',
     components: {
       UpdaterProgressIndicator,
-    },
-    data() {
-      return {
-        hello: 123,
-      };
-    },
-    mounted() {
-      this.doit();
-    },
-    methods: {
-      doit() {
-        const updater = new UpdaterInRender(this.$electron.ipcRenderer, this);
-        console.log(updater.toString());
-        // updater.updateMessageHelper.notifier.doTest();
-        updater.askStrategy();
-        updater.AskDownload = true;
-        updater.setStrategy(updater.toString());
-      },
-      changeHello(input) {
-        this.hello = input;
-      },
     },
   };
 </script>

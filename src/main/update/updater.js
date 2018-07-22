@@ -1,9 +1,7 @@
 import { ipcMain, dialog } from 'electron'; // eslint-disable-line
 const Promise = require('bluebird');
-const { CancellationToken } = require('electron-builder-http');
 const log = require('electron-log');
 const { autoUpdater } = require('electron-updater');
-const defultStorageSetting = { autoCheck: true, askDownload: false, askQuitInstall: true };
 function setAutoUpdater() {
   autoUpdater.autoDownload = true; // when the update is available, it will download automatically
   // if user does not install downloaded app, it will auto install when quit the app
@@ -19,9 +17,7 @@ const UpdaterFactory = (function () {
   class Updater {
     constructor(window, app) {
       this.currentUpdateInfo = null; // todo in future
-      this.ipcMain = ipcMain;
       this.alreadyInUpdate = false;
-      this.cancellationToken = new CancellationToken();
       // check if auto updater module available
       if (!autoUpdater) {
         return null;
@@ -37,22 +33,12 @@ const UpdaterFactory = (function () {
       });
     }
 
-    // todo for now no such concern
-    cancelUpdate() {
-      return autoUpdater.downloadUpdate(this.cancellationToken); // return promise
-    }
-
     startUpdateCheck() {
-      return new Promise((resolve, reject) => {
-        if (this.alreadyInUpdate) {
-          reject(new Error('already in use'));
-        }
-        this.alreadyInUpdate = true;
+      return new Promise((resolve) => {
         autoUpdater.logger = log;
         autoUpdater.logger.transports.file.level = 'info';
-        log.info('update checking started');
-        this.registerHandlerOfMessageFromUpdater();
-        resolve(autoUpdater.checkForUpdates());
+        ulog('update checking started');
+        resolve(this.doUpdate());
       });
     }
 
@@ -66,39 +52,35 @@ const UpdaterFactory = (function () {
       }
     }
 
-    registerHandlerOfMessageFromUpdater() {
-      autoUpdater.on('checking-for-update', () => {
-        ulog('checking-for-update');
-      });
-      autoUpdater.on('update-available', (info) => {
-        ulog(`update available ${JSON.stringify(info)}`);
-        if (this.checkUpdateInfo(info)) {
-          this.sendStatusToWindow(JSON.stringify(info));
-        } else {
-          this.sendStatusToWindow('not proper update');
-        }
-      });
+    doUpdate() {
+      return new Promise((resolve, reject) => {
+        const handleRejection = (err) => {
+          reject(err);
+        };
+        autoUpdater.on('checking-for-update', () => {
+          ulog('checking-for-update');
+        });
+        autoUpdater.on('update-available', (info) => {
+          ulog(`update available ${JSON.stringify(info)}`);
+          if (this.checkUpdateInfo(info)) {
+            autoUpdater.downloadUpdate().catch(handleRejection);
+          } else {
+            ulog('not proper update');
+            resolve('updateNotAvailable');
+          }
+        });
 
-      autoUpdater.on('update-not-available', (info) => {
-        ulog(`update not available ${JSON.stringify(info)}`);
-        this.alreadyInUpdate = false;
-        if (this.menuallyStarted) {
-          this.updateMessageHelper.notifier.updateNotAvailable();
-        }
-      });
-      autoUpdater.on('error', (err) => {
-        ulog(`update error: ${err.stack}`);
-        this.alreadyInUpdate = false;
-        // as the onStart or startUpdateManually will throw the error; will not handle it here
-      });
-      autoUpdater.on('download-progress', (progressObj) => {
-        this.updateMessageHelper.notifier.updateDownloadStatus(progressObj);
-      });
-      autoUpdater.on('update-downloaded', () => {
-        ulog('update downloaded');
-        if (!this.updateStrategyHelper.AskQuitInstall) {
-          autoUpdater.quitAndInstall(true, true);
-        } else {
+        autoUpdater.on('update-not-available', (info) => {
+          resolve('updateNotAvailable');
+          ulog(`update not available ${JSON.stringify(info)}`);
+        });
+        autoUpdater.on('error', (err) => {
+          ulog(`update error: ${err.stack}\n this update cancelled.`);
+        });
+        autoUpdater.on('download-progress', (progressObj) => {
+          this.sendStatusToWindow(JSON.stringify(progressObj));
+        });
+        autoUpdater.on('update-downloaded', () => {
           // todo multi language
           dialog.showMessageBox({
             type: 'question',
@@ -109,9 +91,13 @@ const UpdaterFactory = (function () {
             if (response === 0) { // Runs the following if 'Yes' is clicked
               this.app.showExitPrompt = false;
               autoUpdater.quitAndInstall(true, true);
+              resolve('restart');
+            } else {
+              resolve('wait');
             }
           });
-        }
+        });
+        autoUpdater.checkForUpdates().catch(handleRejection);
       });
     }
 
