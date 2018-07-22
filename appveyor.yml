@@ -20,7 +20,6 @@ cache:
 init:
   - git config --global core.autocrlf input
   - forfiles /P build /m *.exe /C "cmd /e:on /v:on /c set \"Phile=@file\" & if @ISDIR==FALSE ren @file !Phile: =_!"
-  - cmd: forfiles /P build /m *.exe /C "cmd /e:on /v:on /c set \"Phile=@file\" & if @ISDIR==FALSE ren @file !Phile: =_!"
 
 install:
   - ps: Install-Product node 9 x64
@@ -34,7 +33,7 @@ build_script:
   - dir
 
 after_build
-  - cmd: forfiles /P build /m *.exe /C "cmd /e:on /v:on /c set \"Phile=@file\" & if @ISDIR==FALSE ren @file !Phile: =_!"
+  - forfiles /P build /m *.exe /C "cmd /e:on /v:on /c set \"Phile=@file\" & if @ISDIR==FALSE ren @file !Phile: =_!"
 
 test: off
 
