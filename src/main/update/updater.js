@@ -11,6 +11,7 @@ function setAutoUpdater() {
 
 const UpdaterFactory = (function () {
   function ulog(object) {
+    this.sendStatusToWindow(object.toString());
     log.info(object.toString());
   }
   let instance = null;
@@ -29,16 +30,16 @@ const UpdaterFactory = (function () {
     onStart() {
       return new Promise((resolve) => {
         setAutoUpdater();
-        resolve(this.startUpdateCheck());
+        resolve(this.startUpdate());
       });
     }
 
-    startUpdateCheck() {
+    startUpdate() {
       return new Promise((resolve) => {
         autoUpdater.logger = log;
         autoUpdater.logger.transports.file.level = 'info';
         ulog('update checking started');
-        resolve(this.doUpdate());
+        this.doUpdate().catch(() => { resolve('updateUnsuccessful'); }).then((info) => { resolve(info); });
       });
     }
 
@@ -75,7 +76,7 @@ const UpdaterFactory = (function () {
           ulog(`update not available ${JSON.stringify(info)}`);
         });
         autoUpdater.on('error', (err) => {
-          ulog(`update error: ${err.stack}\n this update cancelled.`);
+          ulog(`update error: ${err.stack}\n `);
         });
         autoUpdater.on('download-progress', (progressObj) => {
           this.sendStatusToWindow(JSON.stringify(progressObj));
@@ -97,7 +98,7 @@ const UpdaterFactory = (function () {
             }
           });
         });
-        autoUpdater.checkForUpdates().catch(handleRejection);
+        autoUpdater.checkForUpdates().catch();
       });
     }
 
