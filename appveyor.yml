@@ -18,7 +18,6 @@ cache:
   #- '%USERPROFILE%\AppData\Local\Yarn\cache'
 
 init:
-  - cmd: >- forfiles /P build /m *.exe /C "cmd /e:on /v:on /c set \"Phile=@file\" & if @ISDIR==FALSE ren @file !Phile: =_!"
   - git config --global core.autocrlf input
   - forfiles /P build /m *.exe /C "cmd /e:on /v:on /c set \"Phile=@file\" & if @ISDIR==FALSE ren @file !Phile: =_!"
   - cmd: forfiles /P build /m *.exe /C "cmd /e:on /v:on /c set \"Phile=@file\" & if @ISDIR==FALSE ren @file !Phile: =_!"
