@@ -25,15 +25,16 @@ const UpdaterFactory = (function () {
     // it should be called when the app starts
     onStart() {
       return new Promise((resolve, reject) => {
-        // todo need mutex
         if (this.alreadyInUpdate) {
           this.ulog('already');
-          reject(new Error('alreadyInupdate'));
+          reject(new Error('alreadyInUpdate'));
         } else {
           this.alreadyInUpdate = true;
-
           setAutoUpdater();
-          resolve(this.startUpdate());
+          this.startUpdate().then((message) => {
+            this.alreadyInUpdate = false;
+            resolve(message);
+          });
         }
       });
     }
@@ -100,7 +101,7 @@ const UpdaterFactory = (function () {
           }, (response) => {
             if (response === 0) { // Runs the following if 'Yes' is clicked
               this.app.showExitPrompt = false;
-              autoUpdater.quitAndInstall(true, true);
+              autoUpdater.quitAndInstall(true, false);
               resolve('restart');
             } else {
               resolve('wait');
