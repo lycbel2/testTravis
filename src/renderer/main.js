@@ -41,7 +41,7 @@ new Vue({
       const { Menu, app, dialog } = this.$electron.remote;
       const template = [
         {
-          label: `${this.$t('msg.file.name')}lolololol`,
+          label: `${this.$t('msg.file.name')}`,
           submenu: [
             {
               label: this.$t('msg.file.open'),

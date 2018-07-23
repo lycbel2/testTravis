@@ -1,4 +1,8 @@
 import { dialog } from 'electron'; // eslint-disable-line
+import VueI18n from 'vue-i18n';
+import Vue from 'vue';
+import messages from '../../renderer/locales';
+
 const Promise = require('bluebird');
 const log = require('electron-log');
 const { autoUpdater } = require('electron-updater');
@@ -9,6 +13,11 @@ function setAutoUpdater() {
   autoUpdater.autoInstallOnAppQuit = false;
   autoUpdater.allowDowngrade = false;
 }
+Vue.use(VueI18n);
+const i18n = new VueI18n({
+  locale: 'zhCN', // set locale
+  messages, // set locale messages
+});
 
 const UpdaterFactory = (function () {
   let instance = null;
@@ -25,6 +34,8 @@ const UpdaterFactory = (function () {
       autoUpdater.logger.transports.file.level = 'info';
       this.win = window;
       this.app = app;
+      this.getSystemLocale();
+      console.log(i18n.t('msg.file.open'));
     }
     // it should be called when the app starts
     onStart() {
@@ -38,7 +49,21 @@ const UpdaterFactory = (function () {
         });
       });
     }
-
+    getSystemLocale() {
+      const localeMap = {
+              'en': 'en',   // eslint-disable-line
+        'en-AU': 'en',
+        'en-CA': 'en',
+        'en-GB': 'en',
+        'en-NZ': 'en',
+        'en-US': 'en',
+        'en-ZA': 'en',
+        'zh-CN': 'zhCN',
+        'zh-TW': 'zhTW',
+      };
+      const locale = this.app.getLocale();
+      i18n.locale = localeMap[locale] || i18n.locale;
+    }
     startUpdate() {
       return new Promise((resolve) => {
         const handelResolve = (message) => {
@@ -116,9 +141,9 @@ const UpdaterFactory = (function () {
           // todo multi language
           dialog.showMessageBox({
             type: 'question',
-            buttons: ['Yes', 'No'],
-            title: 'restart app now',
-            message: 'Unsaved data will be lost. Are you sure you want to quit?',
+            buttons: [i18n.t('msg.update.yes'), i18n.t('msg.update.no')],
+            title: i18n.t('msg.update.title'),
+            message: i18n.t('msg.update.message'),
           }, (response) => {
             if (response === 0) { // Runs the following if 'Yes' is clicked
               this.app.showExitPrompt = false;
