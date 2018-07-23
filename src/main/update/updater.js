@@ -1,11 +1,11 @@
-import { ipcMain, dialog } from 'electron'; // eslint-disable-line
+import { dialog } from 'electron'; // eslint-disable-line
 const Promise = require('bluebird');
 const log = require('electron-log');
 const { autoUpdater } = require('electron-updater');
 function setAutoUpdater() {
-  autoUpdater.autoDownload = true; // when the update is available, it will download automatically
+  autoUpdater.autoDownload = false; // when the update is available, it will download automatically
   // if user does not install downloaded app, it will auto install when quit the app
-  autoUpdater.autoInstallOnAppQuit = false;
+  autoUpdater.autoInstallOnAppQuit = true;
   autoUpdater.allowDowngrade = false;
 }
 
@@ -13,77 +13,98 @@ const UpdaterFactory = (function () {
   let instance = null;
   class Updater {
     constructor(window, app) {
+      console.log('update one one one lls');
       this.currentUpdateInfo = null; // todo in future
       this.alreadyInUpdate = false;
       // check if auto updater module available
       if (!autoUpdater) {
         return null;
       }
+      autoUpdater.logger = log;
+      autoUpdater.logger.transports.file.level = 'info';
       this.win = window;
       this.app = app;
     }
     // it should be called when the app starts
     onStart() {
-      return new Promise((resolve, reject) => {
-        if (this.alreadyInUpdate) {
-          this.ulog('already');
-          reject(new Error('alreadyInUpdate'));
-        } else {
-          this.alreadyInUpdate = true;
-          setAutoUpdater();
-          this.startUpdate().then((message) => {
-            this.alreadyInUpdate = false;
+      return new Promise((resolve) => {
+        this.startUpdate().then((message) => {
+          if (message === 'Err:Connect Error') {
+            setTimeout(() => { resolve(this.onStart()); }, 300000); // 5min check for once
+          } else {
             resolve(message);
-          });
-        }
+          }
+        });
       });
     }
 
     startUpdate() {
       return new Promise((resolve) => {
-        autoUpdater.logger = log;
-        autoUpdater.logger.transports.file.level = 'info';
-        this.ulog('update checking started');
-        this.doUpdate().catch(() => { resolve('updateUnsuccessful'); }).then((info) => { resolve(info); });
+        const handelResolve = (message) => {
+          this.alreadyInUpdate = false;
+          resolve(message);
+        };
+        if (this.alreadyInUpdate) {
+          this.ulog('already');
+          handelResolve('Err:alreadyInUpdate');
+        } else {
+          this.alreadyInUpdate = true;
+          setAutoUpdater();
+          this.ulog('update checking started');
+          this.doUpdate().catch((err) => {
+            switch (err.toString()) {
+              case 'Error: net::ERR_INTERNET_DISCONNECTED':
+                handelResolve('Err:Connect Error');
+                break;
+              case 'Error: net::ERR_NETWORK_CHANGED':
+                handelResolve('Err:Connect Error');
+                break;
+              case 'Error: net::ERR_CONNECTION_RESET':
+                handelResolve('Err:Connect Error');
+                break;
+              default:
+                handelResolve('Err:updateUnsuccessful');
+                break;
+            }
+          }).then((info) => {
+            handelResolve(info);
+          });
+        }
       });
     }
 
-    sendStatusToWindow(text) {
-      if (this.win) {
-        try {
-          this.win.webContents.send('update-message', text);
-        } catch (err) {
-          // means window is closed
-        }
-      }
-    }
 
     doUpdate() {
       return new Promise((resolve, reject) => {
         const handleRejection = (err) => {
-          this.ulog(err);
+          this.ulog(`update error at rejection: ${err.stack}\n `);
+          autoUpdater.removeAllListeners();
           reject(err);
+        };
+        const handleResolve = (message) => {
+          this.ulog(message);
+          autoUpdater.removeAllListeners();
+          resolve(message);
         };
         autoUpdater.on('checking-for-update', () => {
           this.ulog('checking-for-update');
         });
+        process.on('uncaughtException', handleRejection);
         autoUpdater.on('update-available', (info) => {
           this.ulog(`update available ${JSON.stringify(info)}`);
           if (this.checkUpdateInfo(info)) {
             autoUpdater.downloadUpdate().catch(handleRejection);
           } else {
-            this.ulog('not proper update');
-            resolve('updateNotAvailable');
+            handleResolve('updateNotAvailable');
           }
         });
 
-        autoUpdater.on('update-not-available', (info) => {
-          resolve('updateNotAvailable');
-          this.ulog(`update not available ${JSON.stringify(info)}`);
+        autoUpdater.on('update-not-available', () => {
+          handleResolve('updateNotAvailable');
         });
         autoUpdater.on('error', (err) => {
-          console.log(err);
-          this.ulog(`update error: ${err.stack}\n `);
+          console.log(`error at listener${err}`);
+          this.ulog(`update error at listener: ${err.stack}\n `);
         });
         autoUpdater.on('download-progress', (progressObj) => {
           let logMessage = `Download speed: ${progressObj.bytesPerSecond}`;
@@ -102,14 +123,24 @@ const UpdaterFactory = (function () {
             if (response === 0) { // Runs the following if 'Yes' is clicked
               this.app.showExitPrompt = false;
               autoUpdater.quitAndInstall(true, true);
-              resolve('restart');
+              handleResolve('restart');
             } else {
-              resolve('wait');
+              handleResolve('wait');
             }
           });
         });
-        autoUpdater.checkForUpdates().catch();
+        autoUpdater.checkForUpdates().catch(handleRejection);
       });
+    }
+
+    sendStatusToWindow(text) {
+      if (this.win) {
+        try {
+          this.win.webContents.send('update-message', text);
+        } catch (err) {
+          // means window is closed
+        }
+      }
     }
 
     /*

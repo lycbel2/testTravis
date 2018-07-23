@@ -81,7 +81,6 @@ function createWindow() {
 app.on('ready', () => {
   app.setName('SPlayerX');
   createWindow();
-  Updater.ulog('created window');
   try {
     updater = Updater.getInstance(mainWindow, app);
   } catch (e) {
