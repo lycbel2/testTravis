@@ -101,7 +101,7 @@ const UpdaterFactory = (function () {
           }, (response) => {
             if (response === 0) { // Runs the following if 'Yes' is clicked
               this.app.showExitPrompt = false;
-              autoUpdater.quitAndInstall(true, true);
+              autoUpdater.quitAndInstall(true, false);
               resolve('restart');
             } else {
               resolve('wait');
