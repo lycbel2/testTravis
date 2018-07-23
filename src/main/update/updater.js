@@ -11,9 +11,9 @@ function setAutoUpdater() {
 
 const UpdaterFactory = (function () {
   let instance = null;
+
   class Updater {
     constructor(window, app) {
-      console.log('update one one one lls');
       this.currentUpdateInfo = null; // todo in future
       this.alreadyInUpdate = false;
       // check if auto updater module available
@@ -30,7 +30,7 @@ const UpdaterFactory = (function () {
       return new Promise((resolve) => {
         this.startUpdate().then((message) => {
           if (message === 'Err:Connect Error') {
-            setTimeout(() => { resolve(this.onStart()); }, 300000); // 5min check for once
+            setTimeout(() => { resolve(this.onStart()); }, 5000); // 5min check for once
           } else {
             resolve(message);
           }
@@ -103,7 +103,6 @@ const UpdaterFactory = (function () {
           handleResolve('updateNotAvailable');
         });
         autoUpdater.on('error', (err) => {
-          console.log(`error at listener${err}`);
           this.ulog(`update error at listener: ${err.stack}\n `);
         });
         autoUpdater.on('download-progress', (progressObj) => {
@@ -122,7 +121,7 @@ const UpdaterFactory = (function () {
           }, (response) => {
             if (response === 0) { // Runs the following if 'Yes' is clicked
               this.app.showExitPrompt = false;
-              autoUpdater.quitAndInstall(true, true);
+              autoUpdater.quitAndInstall(true, false);
               handleResolve('restart');
             } else {
               handleResolve('wait');
@@ -168,9 +167,6 @@ const UpdaterFactory = (function () {
   }
 
   return {
-    ulog(object) {
-      log.info(object.toString());
-    },
     getInstance(win, app) {
       if (instance) {
         if (win && app) {

@@ -11,7 +11,6 @@ if (process.env.NODE_ENV !== 'development') {
 let mainWindow;
 let updater;
 
-
 const shouldQuit = app.makeSingleInstance(() => {
   // Someone tried to run a second instance, we should focus our window.
   if (mainWindow) {
@@ -21,7 +20,7 @@ const shouldQuit = app.makeSingleInstance(() => {
 });
 
 // will quit the second instance on windows
-if (process.platform === '32' || shouldQuit) {
+if (process.platform === 'win32' && shouldQuit) {
   app.quit();
 }
 const winURL = process.env.NODE_ENV === 'development'
@@ -82,20 +81,8 @@ function createWindow() {
 app.on('ready', () => {
   app.setName('SPlayerX');
   createWindow();
-  try {
-    updater = Updater.getInstance(mainWindow, app);
-  } catch (e) {
-    console.log('lls');
-  }
-
-  app.on('err', (err) => {
-    Updater.ulog(err);
-    console.log(err);
-  });
-  updater.onStart().catch((err) => {
-    // todo to handel different error
-    console.log(`update err ${err}`);
-  }).then(() => { console.log(' successfully started'); });
+  updater = Updater.getInstance(mainWindow, app);
+  updater.onStart().then((message) => { console.log(message); });
 });
 
 app.on('window-all-closed', () => {
@@ -107,7 +94,6 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
   if (mainWindow === null) {
     createWindow();
-    Updater.ulog('created window');
     updater.Window = mainWindow;
   }
 });
