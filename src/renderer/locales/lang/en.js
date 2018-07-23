@@ -55,7 +55,7 @@ export default {
     },
     update: {
       title: 'update dialog',
-      restartAsk: 'Restart the app now to install update?',
+      message: 'Restart the app now to install update?',
       yes: 'yes',
       no: 'no',
     },

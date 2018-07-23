@@ -35,7 +35,6 @@ const UpdaterFactory = (function () {
       this.win = window;
       this.app = app;
       this.getSystemLocale();
-      console.log(i18n.t('msg.file.open'));
     }
     // it should be called when the app starts
     onStart() {

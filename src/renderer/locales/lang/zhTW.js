@@ -55,7 +55,7 @@ export default {
     },
     update: {
       title: '更新就緒',
-      restartAsk: '更新已就緒，是否現在重啟?',
+      message: '更新已就緒，是否現在重啟?',
       yes: '是',
       no: '否',
     },
