@@ -3,9 +3,10 @@ const Promise = require('bluebird');
 const log = require('electron-log');
 const { autoUpdater } = require('electron-updater');
 function setAutoUpdater() {
-  autoUpdater.autoDownload = false; // when the update is available, it will download automatically
+  // when the update is available, it will not download automatically
+  autoUpdater.autoDownload = false;
   // if user does not install downloaded app, it will auto install when quit the app
-  autoUpdater.autoInstallOnAppQuit = true;
+  autoUpdater.autoInstallOnAppQuit = false;
   autoUpdater.allowDowngrade = false;
 }
 
