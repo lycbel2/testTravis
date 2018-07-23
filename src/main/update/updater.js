@@ -111,7 +111,6 @@ const UpdaterFactory = (function () {
         autoUpdater.checkForUpdates().catch();
       });
     }
-
     /*
      * for the future maybe
      * distribute update partially

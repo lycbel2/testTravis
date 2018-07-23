@@ -20,7 +20,8 @@ const shouldQuit = app.makeSingleInstance(() => {
   }
 });
 
-if (shouldQuit) {
+// will quit the second instance on windows
+if (process.platform === '32' || shouldQuit) {
   app.quit();
 }
 const winURL = process.env.NODE_ENV === 'development'
