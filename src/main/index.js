@@ -11,18 +11,21 @@ if (process.env.NODE_ENV !== 'development') {
 let mainWindow;
 let updater;
 
-const shouldQuit = app.makeSingleInstance(() => {
-  // Someone tried to run a second instance, we should focus our window.
+
+if (!app.requestSingleInstanceLock()) {
+  app.quit();
+}
+app.on('second-instance', () => {
   if (mainWindow) {
-    if (mainWindow.isMinimized()) mainWindow.restore();
-    mainWindow.focus();
+    try {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    } catch (err) {
+      // pass
+    }
   }
 });
 
-// will quit the second instance on windows
-if (process.platform === 'win32' && shouldQuit) {
-  app.quit();
-}
 const winURL = process.env.NODE_ENV === 'development'
   ? 'http://localhost:9080'
   : `file://${__dirname}/index.html`;
@@ -89,6 +92,10 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+// note it will not be called when windows restarts all shuts down
+app.on('quit', () => {
+  app.releaseSingleInstanceLock();
 });
 
 app.on('activate', () => {

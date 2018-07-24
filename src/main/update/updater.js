@@ -44,24 +44,10 @@ const UpdaterFactory = (function () {
             setTimeout(() => { resolve(this.onStart()); }, 5000); // 5min check for once
           } else {
             resolve(message);
+            this.ulog(`lyc${message}`);
           }
         });
       });
-    }
-    getSystemLocale() {
-      const localeMap = {
-              'en': 'en',   // eslint-disable-line
-        'en-AU': 'en',
-        'en-CA': 'en',
-        'en-GB': 'en',
-        'en-NZ': 'en',
-        'en-US': 'en',
-        'en-ZA': 'en',
-        'zh-CN': 'zhCN',
-        'zh-TW': 'zhTW',
-      };
-      const locale = this.app.getLocale();
-      i18n.locale = localeMap[locale] || i18n.locale;
     }
     startUpdate() {
       return new Promise((resolve) => {
@@ -77,20 +63,7 @@ const UpdaterFactory = (function () {
           setAutoUpdater();
           this.ulog('update checking started');
           this.doUpdate().catch((err) => {
-            switch (err.toString()) {
-              case 'Error: net::ERR_INTERNET_DISCONNECTED':
-                handelResolve('Err:Connect Error');
-                break;
-              case 'Error: net::ERR_NETWORK_CHANGED':
-                handelResolve('Err:Connect Error');
-                break;
-              case 'Error: net::ERR_CONNECTION_RESET':
-                handelResolve('Err:Connect Error');
-                break;
-              default:
-                handelResolve('Err:updateUnsuccessful');
-                break;
-            }
+            handelResolve(`Error:${err.toString()}`);
           }).then((info) => {
             handelResolve(info);
           });
@@ -106,6 +79,12 @@ const UpdaterFactory = (function () {
           autoUpdater.removeAllListeners();
           reject(err);
         };
+        const handleRejectionProcess = (err) => {
+          this.ulog(`update error at process ejection: ${err.stack}\n `);
+          process.removeListener('uncaughtException', handleRejectionProcess);
+          autoUpdater.removeAllListeners();
+          reject(err);
+        };
         const handleResolve = (message) => {
           this.ulog(message);
           autoUpdater.removeAllListeners();
@@ -114,7 +93,7 @@ const UpdaterFactory = (function () {
         autoUpdater.on('checking-for-update', () => {
           this.ulog('checking-for-update');
         });
-        process.on('uncaughtException', handleRejection);
+        process.on('uncaughtException', handleRejectionProcess);
         autoUpdater.on('update-available', (info) => {
           this.ulog(`update available ${JSON.stringify(info)}`);
           if (this.checkUpdateInfo(info)) {
@@ -178,6 +157,21 @@ const UpdaterFactory = (function () {
       updateInfo.toString();
       // compare(this.currentUpdateInfo, updateInfo);
       return true;
+    }
+    getSystemLocale() {
+      const localeMap = {
+        'en': 'en',   // eslint-disable-line
+        'en-AU': 'en',
+        'en-CA': 'en',
+        'en-GB': 'en',
+        'en-NZ': 'en',
+        'en-US': 'en',
+        'en-ZA': 'en',
+        'zh-CN': 'zhCN',
+        'zh-TW': 'zhTW',
+      };
+      const locale = this.app.getLocale();
+      i18n.locale = localeMap[locale] || i18n.locale;
     }
     set Window(win) {
       this.win = win;
