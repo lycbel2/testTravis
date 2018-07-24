@@ -1,11 +1,11 @@
 import { dialog } from 'electron'; // eslint-disable-line
 import VueI18n from 'vue-i18n';
 import Vue from 'vue';
+import Promise from 'bluebird';
+import log from 'electron-log';
+import { autoUpdater } from 'electron-updater';
 import messages from '../../renderer/locales';
-
-const Promise = require('bluebird');
-const log = require('electron-log');
-const { autoUpdater } = require('electron-updater');
+const waitTime = 60 * 60 * 5 * 1000;
 function setAutoUpdater() {
   // when the update is available, it will not download automatically
   autoUpdater.autoDownload = false;
@@ -36,23 +36,42 @@ const UpdaterFactory = (function () {
       this.app = app;
       this.getSystemLocale();
     }
-    // it should be called when the app starts
+    /*
+     *it should be called when the app starts
+     * it will not got any rejection as reject will be handled in startUpdate
+     * , here is only resolved message
+     */
     onStart() {
       return new Promise((resolve) => {
         this.startUpdate().then((message) => {
-          if (message === 'Err:Connect Error') {
-            setTimeout(() => { resolve(this.onStart()); }, 5000); // 5min check for once
+          if (message.substring(0, 5) === 'Error') {
+            setTimeout(() => { resolve(this.onStart()); }, waitTime); // 5min check for once
           } else {
+            this.ulog(`update finished lyc${message}`);
             resolve(message);
-            this.ulog(`lyc${message}`);
           }
         });
       });
     }
+    getSystemLocale() {
+      const localeMap = {
+        'en': 'en',   // eslint-disable-line
+        'en-AU': 'en',
+        'en-CA': 'en',
+        'en-GB': 'en',
+        'en-NZ': 'en',
+        'en-US': 'en',
+        'en-ZA': 'en',
+        'zh-CN': 'zhCN',
+        'zh-TW': 'zhTW',
+      };
+      const locale = this.app.getLocale();
+      i18n.locale = localeMap[locale] || i18n.locale;
+    }
     startUpdate() {
       return new Promise((resolve) => {
         const handelResolve = (message) => {
-          this.alreadyInUpdate = false;
+          this.alreadyInUpdate = false; // only one update allowed at one time
           resolve(message);
         };
         if (this.alreadyInUpdate) {
@@ -62,8 +81,22 @@ const UpdaterFactory = (function () {
           this.alreadyInUpdate = true;
           setAutoUpdater();
           this.ulog('update checking started');
+
           this.doUpdate().catch((err) => {
-            handelResolve(`Error:${err.toString()}`);
+            switch (err.toString()) {
+              case 'Error: net::ERR_INTERNET_DISCONNECTED':
+                handelResolve('Err:Connect Error');
+                break;
+              case 'Error: net::ERR_NETWORK_CHANGED':
+                handelResolve('Err:Connect Error');
+                break;
+              case 'Error: net::ERR_CONNECTION_RESET':
+                handelResolve('Error:Connect Error');
+                break;
+              default:
+                handelResolve('Error:updateUnsuccessful');
+                break;
+            }
           }).then((info) => {
             handelResolve(info);
           });
@@ -81,7 +114,6 @@ const UpdaterFactory = (function () {
         };
         const handleRejectionProcess = (err) => {
           this.ulog(`update error at process ejection: ${err.stack}\n `);
-          process.removeListener('uncaughtException', handleRejectionProcess);
           autoUpdater.removeAllListeners();
           reject(err);
         };
@@ -157,21 +189,6 @@ const UpdaterFactory = (function () {
       updateInfo.toString();
       // compare(this.currentUpdateInfo, updateInfo);
       return true;
-    }
-    getSystemLocale() {
-      const localeMap = {
-        'en': 'en',   // eslint-disable-line
-        'en-AU': 'en',
-        'en-CA': 'en',
-        'en-GB': 'en',
-        'en-NZ': 'en',
-        'en-US': 'en',
-        'en-ZA': 'en',
-        'zh-CN': 'zhCN',
-        'zh-TW': 'zhTW',
-      };
-      const locale = this.app.getLocale();
-      i18n.locale = localeMap[locale] || i18n.locale;
     }
     set Window(win) {
       this.win = win;
