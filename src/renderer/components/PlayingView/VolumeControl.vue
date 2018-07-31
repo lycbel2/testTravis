@@ -5,9 +5,9 @@
     @mouseout.capture.stop="hideVolumeSlider"
     v-if="showVolumeController">
     <transition name="fade">
-      <div class="container"  ref="sliderContainer"
-        @mousedown.capture.stop.left="onVolumeSliderClick"
-        v-if="showVolumeSlider">
+      <div class="updateContainer" ref="sliderContainer"
+           @mousedown.capture.stop.left="onVolumeSliderClick"
+           v-if="showVolumeSlider">
         <div class="slider" ref="slider"
           :style="{ height: volume + '%' }">
         </div>
@@ -175,7 +175,7 @@ export default {
   -webkit-app-region: no-drag;
   z-index: 500;
 
-  .container {
+  .updateContainer {
     position: relative;
     bottom: 115px;
     width: 15px;
@@ -185,7 +185,7 @@ export default {
     border-radius: 1px;
   }
 
-  .container:hover {
+  .updateContainer:hover {
     cursor: pointer;
   }
 
@@ -218,7 +218,7 @@ export default {
     right: 25px;
     width: 28px;
     height: 24+5+10+84px;
-    .container {
+    .updateContainer {
       width: 12px;
       height: 84px;
       bottom: -5px;
@@ -232,7 +232,7 @@ export default {
     right: 31.25px;
     width: 35px;
     height: 30+5+10+105px;
-    .container {
+    .updateContainer {
       width: 15px;
       height: 105px;
       bottom: -5px;
@@ -246,7 +246,7 @@ export default {
     right: 50px;
     width: 56px;
     height: 48+5+10+167px;
-    .container {
+    .updateContainer {
       width: 24px;
       height: 168px;
       bottom: 10px;
