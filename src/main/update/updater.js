@@ -50,7 +50,7 @@ const UpdaterFactory = ((() => {
     onStart() {
       return new Promise((resolve) => {
         this.mainHelper.onUpdateDownloaded('');
-        this.mainHelper.onStart();
+        setTimeout(() => { this.mainHelper.onStart(); }, 2000);
         if (process.env.NODE_ENV === 'production') {
           this.startUpdate().then((message) => {
             if (message.substring(0, 5) === 'Error') {

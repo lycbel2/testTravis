@@ -96,6 +96,9 @@
         flex-direction: row;
         opacity: 1;
         transition: opacity 4s linear;
+        line-height: 22px;
+        font-size: 10px;
+        letter-spacing: 0.5px;
         .backGround {
             z-index: 1;
             width: inherit;
@@ -111,16 +114,13 @@
             position: relative;
             height: inherit;
             z-index: 2;
-            font-size: 10px;
             // font-family: PingFang-SC-Medium;
             color: #FFFFFF;
             font-weight:lighter;
-            line-height: 22px;
             margin-left: 25px;
             margin-right: 10px;
             display: -webkit-flex;
             -webkit-flex-direction: row;
-            letter-spacing: 0.5px;
             .linksInUpdater{
                 position: relative;
                 display: inline-block;

@@ -8,11 +8,11 @@ class RendererHelper {
     this.rendererReady();
   }
   learntHasInstalledUpdate() {
-    this.vue.topCenter();
     this.vue.show();
     this.vue.setMessage(this.vue.$t('msg.update.updateInstalled'));
     this.vue.startDisappear(10000);
     this.vue.setBreathType('breatheSuccess');
+    this.vue.topCenter();
   }
   registerListener() {
     this.ipc.on('update-message', (event, arg) => {
