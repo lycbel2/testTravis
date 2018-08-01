@@ -2,7 +2,7 @@
   "name": "TestTravis",
   "productName": "TestTravis",
   "homepage": "https://splayer.org",
-  "version": "0.4.33",
+  "version": "0.4.20",
   "author": "tomasen <tomasen@gmail.com>",
   "description": "a media player",
   "license": null,
@@ -25,7 +25,6 @@
   },
   "_moduleAliases": {
     "electron": "node_modules/@chiflix/electron",
-    "@update": "./src/main/update/",
     "@": "./src/renderer"
   },
   "build": {

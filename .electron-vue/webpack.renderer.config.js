@@ -136,7 +136,6 @@ let rendererConfig = {
       '@': path.join(__dirname, '../src/renderer'),
       'vue$': 'vue/dist/vue.esm.js',
       "electron"  : "node_modules/@chiflix/electron",
-      '@update': path.join(__dirname, '../src/main/update'),
     },
     extensions: ['.js', '.vue', '.json', '.css', '.node']
   },

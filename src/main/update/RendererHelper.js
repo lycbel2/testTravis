@@ -20,6 +20,7 @@ class RendererHelper {
     });
   }
   rendererReady() {
+    console.log('ready');
     const message = new Message(Message.rendererReadyTitle, 'void').toString();
     this.ipc.send('update-message', message);
   }
@@ -41,15 +42,25 @@ class RendererHelper {
  */
 
 class RendererHelperForWin extends RendererHelper {
-  readyToInstallUpdate() {
+  constructor(vueObject) {
+    super(vueObject);
+    // will only listen installOrNot selection for once
+    this.alreadySentWillInstallUpdateReply = false;
+  }
+  hasUpdateWaitingForInstall() {
     this.vue.show();
     const buttons = [{ text: this.vue.$t('msg.update.yes'), callBack: this.install, THIS: this }, { text: this.vue.$t('msg.update.no'), callBack: this.notInstall, THIS: this }];
     this.vue.registerCallBackButton(buttons);
-    this.vue.onRight();
+    this.vue.onLeftForWin();
     this.vue.setMessage(this.vue.$t('msg.update.message'));
     this.vue.setBreathType('breatheAlert');
   }
   installOrNot(yesOrNo) {
+    if (this.alreadySentWillInstallUpdateReply) {
+      this.vue.startDisappear(2000);
+      return;
+    }
+    this.alreadySentWillInstallUpdateReply = true;
     const message = new Message(
       Message.willInstallOrNotTitle,
       { [Message.willInstallOrNotTitle]: yesOrNo },
@@ -60,14 +71,14 @@ class RendererHelperForWin extends RendererHelper {
     this.installOrNot(true);
   }
   notInstall() {
-    this.vue.startDisappear(2000);
     this.installOrNot(false);
   }
   handleMessage(arg) {
+    console.log(arg);
     const message = super.handleMessage(arg);
     switch (message.title) {
       case Message.toInstallMessageNowTitle:
-        this.readyToInstallUpdate(message);
+        this.hasUpdateWaitingForInstall(message);
         break;
       default:
         break;

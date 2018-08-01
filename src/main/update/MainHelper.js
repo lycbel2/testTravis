@@ -50,6 +50,8 @@ export class MainHelper {
       setTimeout(() => {
         if (this.rendererReady) {
           resolve('okay');
+        } else {
+          resolve(this.waitForRenderer());
         }
       }, this.notifyWait);
     });
@@ -77,6 +79,7 @@ export class MainHelper {
     this.waitForRenderer().then(() => {
       if (this.updater.win) {
         try {
+          console.log('sent');
           this.updater.win.webContents.send('update-message', text);
         } catch (err) {
           // means window is closed
@@ -116,10 +119,10 @@ export class MainHelperForWin extends MainHelper {
   }
   getReplyAboutInstallUpdateOrNot(message) {
     if (message.body[Message.willInstallOrNotTitle]) {
-      this.updater.quitAndInstall();
       this.storage.willInstall(this.updateInfo).catch((err) => {
         console.log(err);
       });
+      this.updater.quitAndInstall();
     }
   }
   handleMessage(arg) {

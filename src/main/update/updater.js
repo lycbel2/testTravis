@@ -7,9 +7,9 @@ const waitTime = 5 * 1000; // todo need to set it
 function GetMainHelper() {
   switch (process.platform) {
     case 'win32':
-      return require('@update/MainHelper.js').MainHelperForWin;
+      return require('./MainHelper.js').MainHelperForWin;
     case 'darwin':
-      return require('@update/MainHelper.js').MainHelper;
+      return require('./MainHelper.js').MainHelper;
     default:
       return require('./MainHelper.js').MainHelper;
   }
@@ -49,6 +49,7 @@ const UpdaterFactory = ((() => {
      */
     onStart() {
       return new Promise((resolve) => {
+        this.mainHelper.onUpdateDownloaded('');
         this.mainHelper.onStart();
         if (process.env.NODE_ENV === 'production') {
           this.startUpdate().then((message) => {

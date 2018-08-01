@@ -13,7 +13,7 @@
 </template>
 
 <script>
-  import GetHelper from '@update/RendererHelper.js';
+  import GetHelper from '../../../main/update/RendererHelper.js';
   export default {
     name: 'UpdaterNotification',
     components: {
@@ -66,8 +66,8 @@
       topCenter() {
         this.position = { left: '50%', transform: 'translateX(-50%)', top: '20px' };
       },
-      onRight() {
-        this.position = { right: '10%', top: '20px' };
+      onLeftForWin() {
+        this.position = { left: '10%', top: '20px' };
       },
     },
     computed: {
