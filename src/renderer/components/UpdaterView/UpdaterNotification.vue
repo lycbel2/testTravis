@@ -96,9 +96,24 @@
         flex-direction: row;
         opacity: 1;
         transition: opacity 4s linear;
-        line-height: 22px;
-        font-size: 10px;
-        letter-spacing: 0.5px;
+        @media screen and (max-width: 854px) {
+            line-height: 22px;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+            top: 22px;
+        }
+        @media screen and (min-width: 854px) and (max-width: 1920px) {
+            line-height: 22px;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+            top: 22px;
+        }
+        @media screen and (min-width: 1920px) {
+            line-height: 22px;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+            top: 22px;
+        }
         .backGround {
             z-index: 1;
             width: inherit;
@@ -109,7 +124,6 @@
             border-radius: 16px;
             background-color: rgba(64,64,64,.89);
             -webkit-filter: blur(0.5px);
-        }
         .overInner{
             position: relative;
             height: inherit;
