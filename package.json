@@ -24,7 +24,9 @@
     "postinstall": "npm run lint:fix"
   },
   "_moduleAliases": {
-    "electron": "node_modules/@chiflix/electron"
+    "electron": "node_modules/@chiflix/electron",
+    "@update": "./src/main/update/",
+    "@": "./src/renderer"
   },
   "build": {
     "productName": "testTravis",

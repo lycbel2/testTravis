@@ -13,7 +13,7 @@
 </template>
 
 <script>
-  import GetHelper from '../../../main/update/RendererHelper.js';
+  import GetHelper from '@update/RendererHelper.js';
   export default {
     name: 'UpdaterNotification',
     components: {
@@ -26,9 +26,9 @@
         updateShow: false,
         baseHeight: '22px',
         buttons: [],
-        position: { left: '50%', top: '50px' },
+        position: { right: '50%', top: '50px' },
         breathType: null,
-        hidden: 'hidden',
+        visibility: 'hidden',
       };
     },
     beforeMount() {
@@ -40,10 +40,11 @@
     },
     methods: {
       hide() {
-        this.hidden = 'hidden';
+        this.visibility = 'hidden';
       },
       show() {
-        this.hidden = 'false';
+        this.$refs.showWindow.className = 'updateContainer';
+        this.visibility = 'visible';
       },
       registerCallBackButton(buttons) {
         this.buttons = buttons;
@@ -56,12 +57,17 @@
           this.$refs.showWindow.className = 'updateContainerDisappear';
         }, time);
       },
-      setPosition(left, top) {
-        this.position.left = left;
-        this.position.top = top;
+      setPosition(position) {
+        this.position = position;
       },
       setBreathType(breath) {
         this.breathType = breath;
+      },
+      topCenter() {
+        this.position = { left: '50%', transform: 'translateX(-50%)', top: '20px' };
+      },
+      onRight() {
+        this.position = { right: '10%', top: '20px' };
       },
     },
     computed: {
@@ -69,10 +75,10 @@
         return ({ 'webkit-animation-name': this.breathType });
       },
       containerProp() {
-        return ({ left: this.position.left, top: this.position.top });
+        return (this.position);
       },
       hideOrNot() {
-        return ({ hidden: this.hidden });
+        return ({ visibility: this.visibility });
       },
     },
   };
@@ -80,7 +86,8 @@
 
 <style lang="scss">
     .updateContainer{
-        position: absolute;
+        position: fixed;
+        margin-right: 10px;
         height: 22px;
         z-index: 1;
         display: -webkit-flex;
@@ -89,9 +96,6 @@
         flex-direction: row;
         opacity: 1;
         transition: opacity 4s linear;
-        -webkit-transition: opacity 4s linear;
-        -moz-transition: opacity 4s linear;
-        -ms-transition: opacity 4s linear;
         .backGround {
             z-index: 1;
             width: inherit;
@@ -108,7 +112,7 @@
             height: inherit;
             z-index: 2;
             font-size: 10px;
-            font-family: PingFang-SC-Medium;
+            // font-family: PingFang-SC-Medium;
             color: #FFFFFF;
             font-weight:lighter;
             line-height: 22px;
@@ -116,6 +120,7 @@
             margin-right: 10px;
             display: -webkit-flex;
             -webkit-flex-direction: row;
+            letter-spacing: 0.5px;
             .linksInUpdater{
                 position: relative;
                 display: inline-block;

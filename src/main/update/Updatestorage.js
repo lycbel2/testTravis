@@ -1,6 +1,6 @@
+import Promise from 'bluebird';
+import storage from 'electron-json-storage';
 import { UpdateInfo } from './Message.js';
-const Promise = require('bluebird');
-const storage = require('electron-json-storage');
 Promise.promisifyAll(storage);
 const updateInstalledString = 'updateInstalled#loloxdnkd';
 

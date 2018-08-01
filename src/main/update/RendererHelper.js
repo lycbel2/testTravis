@@ -6,12 +6,12 @@ class RendererHelper {
     this.vue = vueObject;
     this.registerListener();
     this.rendererReady();
-    this.vue.setPosition('40%', '20px');
   }
-  learntHasInstalledUpdate(message) {
+  learntHasInstalledUpdate() {
+    this.vue.topCenter();
     this.vue.show();
-    this.vue.setMessage(message);
-    this.vue.startDisappear(5000);
+    this.vue.setMessage(this.vue.$t('msg.update.updateInstalled'));
+    this.vue.startDisappear(10000);
     this.vue.setBreathType('breatheSuccess');
   }
   registerListener() {
@@ -41,12 +41,12 @@ class RendererHelper {
  */
 
 class RendererHelperForWin extends RendererHelper {
-  readyToInstallUpdate(message) {
+  readyToInstallUpdate() {
     this.vue.show();
     const buttons = [{ text: this.vue.$t('msg.update.yes'), callBack: this.install, THIS: this }, { text: this.vue.$t('msg.update.no'), callBack: this.notInstall, THIS: this }];
     this.vue.registerCallBackButton(buttons);
-    this.vue.setPosition('60%', '20px');
-    this.vue.setMessage(message);
+    this.vue.onRight();
+    this.vue.setMessage(this.vue.$t('msg.update.message'));
     this.vue.setBreathType('breatheAlert');
   }
   installOrNot(yesOrNo) {
@@ -79,7 +79,7 @@ function getHelper() {
     case 'win32':
       return RendererHelperForWin;
     case 'darwin':
-      return RendererHelperForWin;
+      return RendererHelper;
     default:
       return RendererHelper;
   }

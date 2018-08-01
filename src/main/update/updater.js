@@ -1,4 +1,3 @@
-import { dialog } from 'electron'; // eslint-disable-line
 import Promise from 'bluebird';
 import log from 'electron-log';
 import { autoUpdater } from 'electron-updater';
@@ -8,9 +7,9 @@ const waitTime = 5 * 1000; // todo need to set it
 function GetMainHelper() {
   switch (process.platform) {
     case 'win32':
-      return require('./MainHelper.js').MainHelperForWin;
+      return require('@update/MainHelper.js').MainHelperForWin;
     case 'darwin':
-      return require('./MainHelper.js').MainHelperForWin;
+      return require('@update/MainHelper.js').MainHelper;
     default:
       return require('./MainHelper.js').MainHelper;
   }
@@ -22,7 +21,7 @@ function setAutoUpdater() {
   if (process.platform === 'darwin') autoUpdater.autoInstallOnAppQuit = true;
   autoUpdater.allowDowngrade = false;
 }
-const UpdaterFactory = (function () {
+const UpdaterFactory = ((() => {
   let instance = null;
 
   class Updater {
@@ -33,6 +32,7 @@ const UpdaterFactory = (function () {
       if (!autoUpdater) {
         return null;
       }
+      this.autoUpdater = autoUpdater;
       autoUpdater.logger = log;
       autoUpdater.logger.transports.file.level = 'info';
       this.win = window;
@@ -49,7 +49,6 @@ const UpdaterFactory = (function () {
      */
     onStart() {
       return new Promise((resolve) => {
-        this.mainHelper.onUpdateDownloaded({ version: '1.2.3', note: '123' }); // lyc test todo delete
         this.mainHelper.onStart();
         if (process.env.NODE_ENV === 'production') {
           this.startUpdate().then((message) => {
@@ -170,12 +169,6 @@ const UpdaterFactory = (function () {
       // compare(this.currentUpdateInfo, updateInfo);
       return true;
     }
-    set Window(win) {
-      this.win = win;
-    }
-    get Window() {
-      return this.win;
-    }
     ulog(object) {
       this.mainHelper.sendStatusToWindow(object.toString());
       log.info(object.toString());
@@ -195,5 +188,5 @@ const UpdaterFactory = (function () {
       return instance;
     },
   };
-}());
+})());
 export { UpdaterFactory as default };

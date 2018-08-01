@@ -116,7 +116,7 @@ export class MainHelperForWin extends MainHelper {
   }
   getReplyAboutInstallUpdateOrNot(message) {
     if (message.body[Message.willInstallOrNotTitle]) {
-      // this.updater.quitAndInstall(); todo
+      this.updater.quitAndInstall();
       this.storage.willInstall(this.updateInfo).catch((err) => {
         console.log(err);
       });
