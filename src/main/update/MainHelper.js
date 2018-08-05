@@ -137,3 +137,16 @@ export class MainHelperForWin extends MainHelper {
     }
   }
 }
+
+function MainHelperFactory() {
+  switch (process.platform) {
+    case 'win32':
+      return MainHelperForWin;
+    case 'darwin':
+      return MainHelper;
+    default:
+      return MainHelper;
+  }
+}
+const GetMainHelper = MainHelperFactory();
+export default GetMainHelper;

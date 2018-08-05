@@ -1,9 +1,9 @@
 <template>
     <div class="updateContainer" ref="showWindow" :style="[containerProp, hideOrNot]">
-        <div class="backGround" ref="backGround" >
+        <div class="backGround" >
         </div>
         <div class="breathe-div" ref="breath" :style="linkProp"></div>
-        <div class="overInner" ref="overInner" >
+        <div class="overInner" >
             {{content}}
             <div class="linksInUpdater" v-for="(item) in buttons">
                 <a href='#' v-on:click=item.callBack.call(item.THIS)> {{item.text}} </a>
@@ -17,14 +17,11 @@
   export default {
     name: 'UpdaterNotification',
     components: {
-      //
     },
     data() {
       return {
+        helper: null,
         content: '',
-        totalShow: false,
-        updateShow: false,
-        baseHeight: '22px',
         buttons: [],
         position: { right: '50%', top: '50px' },
         breathType: null,
@@ -67,7 +64,10 @@
         this.position = { left: '50%', transform: 'translateX(-50%)', top: '20px' };
       },
       onLeftForWin() {
-        this.position = { left: '10%', top: '20px' };
+        this.position = { left: '20px' };
+      },
+      onRightForMac() {
+        this.position = { right: '20px' };
       },
     },
     computed: {
@@ -85,7 +85,7 @@
 </script>
 
 <style lang="scss">
-    .updateContainer{
+    .updateContainer {
         position: fixed;
         margin-right: 10px;
         height: 22px;
@@ -98,19 +98,22 @@
         transition: opacity 4s linear;
         @media screen and (max-width: 854px) {
             line-height: 22px;
+            height:22px;
             font-size: 10px;
             letter-spacing: 0.5px;
-            top: 22px;
+            top: 25px;
         }
         @media screen and (min-width: 854px) and (max-width: 1920px) {
-            line-height: 22px;
-            font-size: 10px;
+            line-height: 25px;
+            height:25px;
+            font-size: 12px;
             letter-spacing: 0.5px;
             top: 22px;
         }
         @media screen and (min-width: 1920px) {
-            line-height: 22px;
-            font-size: 10px;
+            line-height: 25px;
+            height:25px;
+            font-size: 14px;
             letter-spacing: 0.5px;
             top: 22px;
         }
@@ -118,38 +121,43 @@
             z-index: 1;
             width: inherit;
             position: absolute;
-            top:0px; right:0px; bottom:0px; left:0px;
+            top: 0px;
+            right: 0px;
+            bottom: 0px;
+            left: 0px;
             height: inherit;
             z-index: 1;
             border-radius: 16px;
-            background-color: rgba(64,64,64,.89);
+            background-color: rgba(64, 64, 64, .89);
             -webkit-filter: blur(0.5px);
-        .overInner{
-            position: relative;
-            height: inherit;
-            z-index: 2;
-            // font-family: PingFang-SC-Medium;
-            color: #FFFFFF;
-            font-weight:lighter;
-            margin-left: 25px;
-            margin-right: 10px;
-            display: -webkit-flex;
-            -webkit-flex-direction: row;
-            .linksInUpdater{
+        }
+            .overInner {
                 position: relative;
+                height: inherit;
+                z-index: 2;
+                // font-family: PingFang-SC-Medium;
+                color: #FFFFFF;
+                font-weight: lighter;
+                margin-left: 25px;
+                margin-right: 10px;
+                /*display: -webkit-flex;*/
+                /*-webkit-flex-direction: row;*/
                 display: inline-block;
-                margin-left:10px;
-                a:active, a:visited, a:link{
-                    text-decoration:none;
-                    color: rgba(255,255,255,0.3);
-                }
-                a:hover {
-                    text-decoration:none;
-                    color: rgba(255,255,255,1);
+                .linksInUpdater {
+                    position: relative;
+                    display: inline-block;
+                    margin-left: 10px;
+                    a:active, a:visited, a:link {
+                        text-decoration: none;
+                        color: rgba(135, 205, 255, 0.3);
+                    }
+                    a:hover {
+                        text-decoration: none;
+                        color: rgb(255, 255, 255);
+                    }
                 }
             }
         }
-    }
     .updateContainerDisappear{
         opacity: 1;
         filter: alpha(opacity=100);

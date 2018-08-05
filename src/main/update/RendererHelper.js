@@ -12,7 +12,6 @@ class RendererHelper {
     this.vue.setMessage(this.vue.$t('msg.update.updateInstalled'));
     this.vue.startDisappear(10000);
     this.vue.setBreathType('breatheSuccess');
-    this.vue.topCenter();
   }
   registerListener() {
     this.ipc.on('update-message', (event, arg) => {
@@ -37,6 +36,14 @@ class RendererHelper {
     return null;
   }
 }
+
+class RendererHelperForMac extends RendererHelper {
+  learntHasInstalledUpdate() {
+    super.learntHasInstalledUpdate();
+    this.vue.onRightForMac();
+  }
+}
+
 /* the child class for windows will send message to render
  * if there is update which can be installed within 2 sec
  */
@@ -44,8 +51,12 @@ class RendererHelper {
 class RendererHelperForWin extends RendererHelper {
   constructor(vueObject) {
     super(vueObject);
-    // will only listen installOrNot selection for once
+    // will only listen restartOrNotToInstallUpdate selection for once
     this.alreadySentWillInstallUpdateReply = false;
+  }
+  learntHasInstalledUpdate() {
+    super.learntHasInstalledUpdate();
+    this.vue.onLeftForWin();
   }
   hasUpdateWaitingForInstall() {
     this.vue.show();
@@ -55,11 +66,11 @@ class RendererHelperForWin extends RendererHelper {
     this.vue.setMessage(this.vue.$t('msg.update.message'));
     this.vue.setBreathType('breatheAlert');
   }
-  installOrNot(yesOrNo) {
+  restartOrNotToInstallUpdate(yesOrNo) {
     if (this.alreadySentWillInstallUpdateReply) {
-      this.vue.startDisappear(2000);
       return;
     }
+    this.vue.startDisappear(500);
     this.alreadySentWillInstallUpdateReply = true;
     const message = new Message(
       Message.willInstallOrNotTitle,
@@ -68,10 +79,10 @@ class RendererHelperForWin extends RendererHelper {
     this.ipc.send('update-message', message.toString());
   }
   install() {
-    this.installOrNot(true);
+    this.restartOrNotToInstallUpdate(true);
   }
   notInstall() {
-    this.installOrNot(false);
+    this.restartOrNotToInstallUpdate(false);
   }
   handleMessage(arg) {
     console.log(arg);
@@ -90,7 +101,7 @@ function getHelper() {
     case 'win32':
       return RendererHelperForWin;
     case 'darwin':
-      return RendererHelper;
+      return RendererHelperForMac;
     default:
       return RendererHelper;
   }

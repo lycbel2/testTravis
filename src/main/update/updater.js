@@ -1,19 +1,10 @@
 import Promise from 'bluebird';
 import log from 'electron-log';
 import { autoUpdater } from 'electron-updater';
-
+import GetMainHelper from './MainHelper.js';
 
 const waitTime = 5 * 1000; // todo need to set it
-function GetMainHelper() {
-  switch (process.platform) {
-    case 'win32':
-      return require('./MainHelper.js').MainHelperForWin;
-    case 'darwin':
-      return require('./MainHelper.js').MainHelper;
-    default:
-      return require('./MainHelper.js').MainHelper;
-  }
-}
+
 function setAutoUpdater() {
   // when the update is available, it will not download automatically
   autoUpdater.autoDownload = false;
@@ -37,8 +28,7 @@ const UpdaterFactory = ((() => {
       autoUpdater.logger.transports.file.level = 'info';
       this.win = window;
       this.app = app;
-      this.mainHelper = new (GetMainHelper())(this);
-
+      this.mainHelper = new GetMainHelper(this);
       // test lyc
       // this.mainHelper.onUpdateDownloaded({ version: '1.2.3', note: 'hello' });
     }
