@@ -25,7 +25,7 @@ export default class Storage {
   needToNotifyUpdateInstalledOrNot() {
     return new Promise((resolve) => {
       this.storage.getAsync(updateInstalledString).then((data) => {
-        console.log(JSON.stringify(data));
+        console.log(`lycbb${JSON.stringify(data)}`);
         if (data && Object.keys(data).length !== 0) {
           resolve(UpdateInfo.getFromStorageString(data));
         } else {

@@ -29,6 +29,7 @@ const UpdaterFactory = ((() => {
       this.win = window;
       this.app = app;
       this.mainHelper = new GetMainHelper(this);
+      this.mainHelper.registerMessageReceiver();
       // test lyc
       // this.mainHelper.onUpdateDownloaded({ version: '1.2.3', note: 'hello' });
     }
@@ -39,7 +40,7 @@ const UpdaterFactory = ((() => {
      */
     onStart() {
       return new Promise((resolve) => {
-        this.mainHelper.onUpdateDownloaded('');
+        this.mainHelper.onUpdateDownloaded({ version: 123, note: 123 });
         setTimeout(() => { this.mainHelper.onStart(); }, 2000);
         if (process.env.NODE_ENV === 'production') {
           this.startUpdate().then((message) => {

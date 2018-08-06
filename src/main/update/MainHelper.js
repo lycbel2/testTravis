@@ -16,7 +16,6 @@ export class MainHelper {
     // check if installed update last round, if yes just notify renderer
     this.storage.needToNotifyUpdateInstalledOrNot().then((back) => {
       if (back) {
-        console.log(JSON.stringify(back));
         this.updateInfo = back;
         this.hasNotifiedUpdateInstall = true;
         this.notifyRendererUpdateHasInstalled();

@@ -17,7 +17,6 @@ class IpcMain extends baseIpc {
   }
   send(message, args) {
     const eventP = null;
-    console.log('lyc send');
     this.event.emit(`${message}ipcRenderer`, eventP, args);
   }
 
@@ -27,7 +26,6 @@ class IpcMain extends baseIpc {
 }
 class IpcRenderer extends baseIpc {
   on(message, callback) {
-    console.log('lyc here');
     return this.event.on(`${message}ipcRenderer`, callback);
   }
   send(message, args) {

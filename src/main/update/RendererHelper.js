@@ -10,7 +10,7 @@ class RendererHelper {
   learntHasInstalledUpdate() {
     this.vue.show();
     this.vue.setMessage(this.vue.$t('msg.update.updateInstalled'));
-    this.vue.startDisappear(10000);
+    // this.vue.startDisappear(10000);
     this.vue.setBreathType('breatheSuccess');
   }
   registerListener() {
@@ -23,7 +23,6 @@ class RendererHelper {
     this.ipc.send('update-message', message);
   }
   handleMessage(arg) {
-    console.log(arg);
     if (!arg) {
       return null;
     }

@@ -88,7 +88,6 @@
     .updateContainer {
         position: fixed;
         margin-right: 10px;
-        height: 22px;
         z-index: 1;
         display: -webkit-flex;
         -webkit-flex-direction: row;
@@ -97,25 +96,26 @@
         opacity: 1;
         transition: opacity 4s linear;
         @media screen and (max-width: 854px) {
-            line-height: 22px;
-            height:22px;
-            font-size: 10px;
-            letter-spacing: 0.5px;
-            top: 25px;
+            line-height: 30px;
+            height:30px;
+            font-size: 12px;
+            letter-spacing: normal;
+            top: 20px;
         }
         @media screen and (min-width: 854px) and (max-width: 1920px) {
-            line-height: 25px;
-            height:25px;
+            height: 38px;
+            color: #FFFFFF;
             font-size: 12px;
-            letter-spacing: 0.5px;
-            top: 22px;
+            line-height: 38px;
+            letter-spacing: normal;
+            top: 20px;
         }
         @media screen and (min-width: 1920px) {
-            line-height: 25px;
-            height:25px;
-            font-size: 14px;
-            letter-spacing: 0.5px;
-            top: 22px;
+            height: 60px;
+            font-size: 15px;
+            line-height: 60px;
+            letter-spacing: normal;
+            top: 20px;
         }
         .backGround {
             z-index: 1;
@@ -132,6 +132,19 @@
             -webkit-filter: blur(0.5px);
         }
             .overInner {
+                font-family: "PingFang SC";
+                @media screen and (max-width: 854px) {
+                  padding-right: 10px;
+                  padding-left: 10px;
+                }
+                @media screen and (min-width: 854px) and (max-width: 1920px) {
+                    padding-right: 10px;
+                    padding-left: 10px;
+                }
+                @media screen and (min-width: 1920px) {
+                    padding-right: 10px;
+                    padding-left: 10px;
+                }
                 position: relative;
                 height: inherit;
                 z-index: 2;
@@ -164,15 +177,23 @@
         display: none;
     }
     .breathe-div {
-        left:10px;
+        @media screen and (max-width: 854px) {
+            left: 10px;
+        }
+        @media screen and (min-width: 854px) and (max-width: 1920px) {
+            left: 12px;
+        }
+        @media screen and (min-width: 1920px) {
+            left: 13px;
+        }
         // position: relative;
         transform: translateY(50%);
         z-index: 2;
         position: absolute;
         top: 50%;
         transform: translate(0, -50%);
-        height: 5px;
-        width: 5px;
+        height: 8px;
+        width: 8px;
         background-color: #bbb;
         border-radius: 50%;
         overflow: hidden;
@@ -184,21 +205,21 @@
     @-webkit-keyframes breatheAlert {
         0% {
             opacity: .4;
-            box-shadow: 0 1px 2px rgba(183,255,111,0.5), 0 1px 1px rgba(183,255,111,0.3) inset;;
+            // box-shadow: 0 1px 2px rgba(183,255,111,0.5), 0 1px 1px rgba(183,255,111,0.3) inset;;
         }
         100% {
             opacity: 1;
-            box-shadow: 0 1px 30px red, 0 1px 20px red inset;
+            // box-shadow: 0 1px 15px red, 0 1px 20px red inset;
         }
     }
     @-webkit-keyframes breatheSuccess {
         0% {
             opacity: .4;
-            box-shadow: 0 1px 2px rgba(183,255,111,0.5), 0 1px 1px rgba(183,255,111,0.3) inset;;
+            box-shadow: 0px 1px 1px rgba(183,255,111,0.5), 0 1px 4px rgba(183,255,111,0.3) inset;;
         }
         100% {
-            opacity: 1;
-            box-shadow: 0 1px 30px greenyellow, 0 1px 20px green inset;
+            opacity: 0.8;
+            box-shadow: 0px 1px 1px greenyellow, 0 1px 4px green inset;
         }
     }
 
