@@ -1,17 +1,18 @@
-import { app, ipcMain } from 'electron' // eslint-disable-line
+import { ipcMain } from 'electron' // eslint-disable-line
 import Storage from './Updatestorage.js';
 import { UpdaterMessage as Message, UpdateInfo } from './Message.js';
 export class MainHelper {
   constructor(updater) {
     this.rendererReady = false;
     this.updater = updater;
-    this.notifyWait = 1000;
+    this.notifyWait = 200;
     this.updateInfo = null;
     this.storage = new Storage();
     this.hasNotifiedUpdateInstall = false;
-    this.registerMessageReceiver();
+    this.ipcMain = ipcMain;
   }
   onStart() {
+    this.registerMessageReceiver();
     // check if installed update last round, if yes just notify renderer
     this.storage.needToNotifyUpdateInstalledOrNot().then((back) => {
       if (back) {
@@ -38,6 +39,7 @@ export class MainHelper {
   }
   // this is only for mac
   willInstallUpdateNextRound(info) {
+    console.log('installed');
     this.storage.willInstall(info);
   }
 
@@ -57,7 +59,7 @@ export class MainHelper {
     });
   }
   registerMessageReceiver() {
-    ipcMain.on('update-message', (event, arg) => {
+    this.ipcMain.on('update-message', (event, arg) => {
       if (arg) {
         this.handleMessage(arg);
       }

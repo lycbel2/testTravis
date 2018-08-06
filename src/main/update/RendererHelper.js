@@ -19,15 +19,16 @@ class RendererHelper {
     });
   }
   rendererReady() {
-    console.log('ready');
     const message = new Message(Message.rendererReadyTitle, 'void').toString();
     this.ipc.send('update-message', message);
   }
   handleMessage(arg) {
+    console.log(arg);
     if (!arg) {
       return null;
     }
     const message = Message.getFromMessage(arg);
+    console.log(message);
     switch (message.title) {
       case Message.installedMessageLastRoundTitle:
         this.learntHasInstalledUpdate(message);
@@ -39,7 +40,7 @@ class RendererHelper {
   }
 }
 
-class RendererHelperForMac extends RendererHelper {
+export class RendererHelperForMac extends RendererHelper {
   learntHasInstalledUpdate() {
     super.learntHasInstalledUpdate();
     this.vue.onRightForMac();
@@ -50,7 +51,7 @@ class RendererHelperForMac extends RendererHelper {
  * if there is update which can be installed within 2 sec
  */
 
-class RendererHelperForWin extends RendererHelper {
+export class RendererHelperForWin extends RendererHelper {
   constructor(vueObject) {
     super(vueObject);
     // will only listen restartOrNotToInstallUpdate selection for once
@@ -87,10 +88,11 @@ class RendererHelperForWin extends RendererHelper {
     this.restartOrNotToInstallUpdate(false);
   }
   handleMessage(arg) {
-    if (!arg) {
+    console.log('dd'+arg); // eslint-disable-line
+    const message = super.handleMessage(arg);
+    if (!message) {
       return null;
     }
-    const message = super.handleMessage(arg);
     switch (message.title) {
       case Message.toInstallMessageNowTitle:
         this.hasUpdateWaitingForInstall(message);

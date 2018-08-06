@@ -23,7 +23,7 @@
         helper: null,
         content: '',
         buttons: [],
-        position: { right: '50%', top: '50px', left: '' },
+        position: { right: '', top: '50px', left: '' },
         breathType: null,
         visibility: 'hidden',
       };
@@ -61,7 +61,7 @@
         this.breathType = breath;
       },
       topCenter() {
-        this.position = { left: '50%', transform: 'translateX(-50%)', top: '20px' };
+        this.position = { left: '50%', transform: 'translateX(-50%)' };
       },
       onLeftForWin() {
         this.position = { left: '20px' };
