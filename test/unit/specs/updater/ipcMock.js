@@ -16,7 +16,8 @@ class IpcMain extends baseIpc {
     return this.event.on(`${message}ipcMain`, callback);
   }
   send(message, args) {
-    this.event.emit(`${message}ipcRenderer`, args);
+    const eventP = null;
+    this.event.emit(`${message}ipcRenderer`, eventP, args);
   }
 
   once(message, callback) {
@@ -28,7 +29,8 @@ class IpcRenderer extends baseIpc {
     return this.event.on(`${message}ipcRenderer`, callback);
   }
   send(message, args) {
-    this.event.emit(`${message}ipcMain`, args);
+    const eventP = null;
+    this.event.emit(`${message}ipcMain`, eventP, args);
   }
   once(message, callback) {
     return this.event.once(`${message}ipcRenderer`, callback);

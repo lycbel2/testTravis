@@ -23,7 +23,7 @@
         helper: null,
         content: '',
         buttons: [],
-        position: { right: '50%', top: '50px' },
+        position: { right: '50%', top: '50px', left: '' },
         breathType: null,
         visibility: 'hidden',
       };

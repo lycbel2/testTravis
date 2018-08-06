@@ -24,7 +24,9 @@ class RendererHelper {
     this.ipc.send('update-message', message);
   }
   handleMessage(arg) {
-    console.log(arg);
+    if (!arg) {
+      return null;
+    }
     const message = Message.getFromMessage(arg);
     switch (message.title) {
       case Message.installedMessageLastRoundTitle:
@@ -85,7 +87,9 @@ class RendererHelperForWin extends RendererHelper {
     this.restartOrNotToInstallUpdate(false);
   }
   handleMessage(arg) {
-    console.log(arg);
+    if (!arg) {
+      return null;
+    }
     const message = super.handleMessage(arg);
     switch (message.title) {
       case Message.toInstallMessageNowTitle:
@@ -94,6 +98,7 @@ class RendererHelperForWin extends RendererHelper {
       default:
         break;
     }
+    return null;
   }
 }
 function getHelper() {
