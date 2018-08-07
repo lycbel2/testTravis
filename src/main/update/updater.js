@@ -42,8 +42,8 @@ const UpdaterFactory = ((() => {
         // this.mainHelper.onUpdateDownloaded({ version: 123, note: 123 });
         // setTimeout(() => { this.mainHelper.onStart(); }, 2000);
         // <- test
-        this.mainHelper.onStart();
-        if (process.env.NODE_ENV === 'production') {
+        if (process.env.NODE_ENV !== 'production') {
+          this.mainHelper.onStart();
           this.startUpdate().then((message) => {
             if (message.substring(0, 5) === 'Error') {
               setTimeout(() => { resolve(this.onStart()); }, waitTime); // 5min check for once
@@ -163,7 +163,7 @@ const UpdaterFactory = ((() => {
       return true;
     }
     ulog(object) {
-      this.mainHelper.sendStatusToWindow(object.toString());
+      this.mainHelper.sendStatusToWindow(object.toString(), 'update-message-test');
       log.info(object.toString());
     }
   }

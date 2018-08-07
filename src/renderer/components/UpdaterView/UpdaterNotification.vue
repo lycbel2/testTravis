@@ -130,7 +130,7 @@
         @media screen and (min-width: 1920px) {
             height: 60px;
             font-size: 24px;
-            line-height: 37.5px;
+            line-height: 60px;
             letter-spacing: normal;
             top: 20px;
             border-radius: 30px;
@@ -148,7 +148,8 @@
             z-index: 1;
             border-radius: inherit;
             background-color: rgba(0,0,0,0.6);
-            -webkit-filter: blur(0.5px);
+            // -webkit-filter: blur(10px);
+            backdrop-filter: blur(10px);
         }
             .overInner {
                 font-family: "PingFang SC";
@@ -165,7 +166,7 @@
                     padding-left: 10px;
                 }
                 @media screen and (min-width: 1920px) {
-                    padding-right: 10px;
+                    padding-right: 15px;
                     padding-left: 10px;
                 }
                 position: relative;
@@ -193,6 +194,7 @@
                     }
                     .clickLinks{
                         display: inline;
+                        margin-right: 3px;
                     }
                 }
             }

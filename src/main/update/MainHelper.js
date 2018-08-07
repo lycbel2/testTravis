@@ -58,12 +58,12 @@ export class MainHelper {
     }
     return null;
   }
-  sendStatusToWindow(text) {
+  sendStatusToWindow(text, channel = 'update-message') {
     // wait for renderer is ready
     this.waitForRenderer().then(() => {
       if (this.updater.win) {
         try {
-          this.updater.win.webContents.send('update-message', text);
+          this.updater.win.webContents.send(channel, text);
         } catch (err) {
           // means window is closed
         }
@@ -73,12 +73,6 @@ export class MainHelper {
 }
 
 export class MainHelperForMac extends MainHelper {
-  constructor(updater) {
-    super(updater);
-    this.withinStartInterval = true;
-    this.startInterval = 5000;
-    setTimeout(() => { this.withinStartInterval = false; }, this.startInterval);
-  }
   // for mac if it downloaded the update it will install it
   onUpdateDownloaded(info) {
     return new Promise(() => {
@@ -95,13 +89,17 @@ export class MainHelperForMac extends MainHelper {
 export class MainHelperForWin extends MainHelper {
   constructor(updater) {
     super(updater);
+    this.withinStartInterval = true;
+    this.startInterval = 15000;
     this.updateInfo = null;
+    setTimeout(() => { this.withinStartInterval = false; }, this.startInterval);
   }
   // overWrite
   // info is in updater's info format
   onUpdateDownloaded(info) {
     return new Promise((resolve) => {
       this.updateInfo = UpdateInfo.getFromUpdaterUpdateInfo(info);
+      console.log(this.withinStartInterval);
       if (!this.hasNotifiedUpdateInstall && this.withinStartInterval) {
         this.storage.getPreviousDownload().then((oldInfo) => {
           if (this.updateInfo.after(oldInfo)) {
