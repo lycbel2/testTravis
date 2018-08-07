@@ -19,9 +19,12 @@ const options = {
   i18n: $i18n,
 };
 let wrapper;
+const updateInfo = { version: '0.5.1', note: 'hello' };
 
 describe('UpdaterNotification.vue', () => {
   beforeEach(() => {
+    ipcMain.removeAllListener();
+    ipcRenderer.removeAllListener();
     wrapper = shallowMount(UpdaterNotification, options);
     wrapper.vm.helper = new RendererHelperForMac(wrapper.vm);
     wrapper.vm.helper.ipc = ipcRenderer;
@@ -36,7 +39,7 @@ describe('UpdaterNotification.vue', () => {
     expect(wrapper.vm.linkProp['webkit-animation-name']).equal(null);
   });
   it('test for mac when can install update', (done) => {
-    mainHelper.onUpdateDownloaded('');
+    mainHelper.onUpdateDownloaded(updateInfo);
     expect(wrapper.vm.helper).not.equal(null);
     setTimeout(() => {
       expect(wrapper.vm.position.right).equal('');

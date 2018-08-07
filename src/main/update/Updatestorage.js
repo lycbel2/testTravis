@@ -3,6 +3,7 @@ import storage from 'electron-json-storage';
 import { UpdateInfo } from './Message.js';
 Promise.promisifyAll(storage);
 const updateInstalledString = 'updateInstalled#loloxdnkd';
+const updateDownloadString = 'updateInstalled#loloxdnkdddksk';
 
 
 export default class Storage {
@@ -14,10 +15,34 @@ export default class Storage {
       resolve(this.storage.setAsync(updateInstalledString, info.toString()));
     });
   }
+  // info need be the type of UpdateInfo
+  updateDownLoaded(info) {
+    return new Promise((resolve) => {
+      resolve(this.storage.setAsync(updateDownloadString, info.toString()));
+    });
+  }
 
-  installedInfoHasBeenNotified() {
+  getPreviousDownload() {
+    return new Promise((resolve) => {
+      this.storage.getAsync(updateDownloadString).then((data) => {
+        if (data && Object.keys(data).length !== 0) {
+          resolve(UpdateInfo.getFromStorageString(data));
+        } else {
+          resolve(null);
+        }
+      });
+    });
+  }
+
+  clearUpdateInstalled() {
     return new Promise((resolve) => {
       resolve(this.storage.setAsync(updateInstalledString, null));
+    });
+  }
+
+  clearPreviousDownload() {
+    return new Promise((resolve) => {
+      resolve(this.storage.setAsync(updateDownloadString, null));
     });
   }
 

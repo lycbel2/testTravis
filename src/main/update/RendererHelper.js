@@ -73,12 +73,13 @@ export class RendererHelperForWin extends RendererHelper {
     if (this.alreadySentWillInstallUpdateReply) {
       return;
     }
-    this.vue.startDisappear(500);
+    this.vue.startDisappear(300);
     this.alreadySentWillInstallUpdateReply = true;
     const message = new Message(
       Message.willInstallOrNotTitle,
       { [Message.willInstallOrNotTitle]: yesOrNo },
     );
+    console.log('send');
     this.ipc.send('update-message', message.toString());
   }
   install() {

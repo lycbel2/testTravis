@@ -39,9 +39,10 @@ const UpdaterFactory = ((() => {
     onStart() {
       return new Promise((resolve) => {
         // test lyc ->
-        this.mainHelper.onUpdateDownloaded({ version: 123, note: 123 });
-        setTimeout(() => { this.mainHelper.onStart(); }, 2000);
+        // this.mainHelper.onUpdateDownloaded({ version: 123, note: 123 });
+        // setTimeout(() => { this.mainHelper.onStart(); }, 2000);
         // <- test
+        this.mainHelper.onStart();
         if (process.env.NODE_ENV === 'production') {
           this.startUpdate().then((message) => {
             if (message.substring(0, 5) === 'Error') {

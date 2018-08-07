@@ -1,5 +1,4 @@
 import { MainHelperForWin, MainHelperForMac } from '../../../../src/main/update/MainHelper.js';
-
 class Updater {
   constructor(ipcMain) {
     this.win = { webContents: ipcMain };

@@ -53,6 +53,7 @@
       },
       startDisappear(time = 50000) {
         setTimeout(() => {
+          this.visibility = 'hidden';
           this.$refs.showWindow.className = 'updateContainerDisappear';
         }, time);
       },

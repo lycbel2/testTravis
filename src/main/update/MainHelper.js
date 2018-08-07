@@ -6,31 +6,23 @@ export class MainHelper {
     this.rendererReady = false;
     this.updater = updater;
     this.notifyWait = 200;
-    this.updateInfo = null;
     this.storage = new Storage();
     this.hasNotifiedUpdateInstall = false;
     this.ipcMain = ipcMain;
   }
   onStart() {
-    this.registerMessageReceiver();
     // check if installed update last round, if yes just notify renderer
-    this.storage.needToNotifyUpdateInstalledOrNot().then((back) => {
-      if (back) {
-        this.updateInfo = back;
+    this.storage.needToNotifyUpdateInstalledOrNot().then((installedInfo) => {
+      if (installedInfo) {
         this.hasNotifiedUpdateInstall = true;
-        this.notifyRendererUpdateHasInstalled();
+        this.notifyRendererUpdateHasInstalled(installedInfo);
       }
     });
   }
-
-  notifyRendererUpdateHasInstalled() {
-    const message = new Message(Message.installedMessageLastRoundTitle, this.updateInfo);
+  notifyRendererUpdateHasInstalled(installedInfo) {
+    const message = new Message(Message.installedMessageLastRoundTitle, installedInfo);
     this.sendStatusToWindow(message.toString());
-    this.storage.installedInfoHasBeenNotified();
-  }
-  // this is only for mac
-  willInstallUpdateNextRound(info) {
-    this.storage.willInstall(info);
+    this.storage.clearUpdateInstalled();
   }
 
   /* as main process will be ready before renderer it will wait
@@ -81,6 +73,12 @@ export class MainHelper {
 }
 
 export class MainHelperForMac extends MainHelper {
+  constructor(updater) {
+    super(updater);
+    this.withinStartInterval = true;
+    this.startInterval = 5000;
+    setTimeout(() => { this.withinStartInterval = false; }, this.startInterval);
+  }
   // for mac if it downloaded the update it will install it
   onUpdateDownloaded(info) {
     return new Promise(() => {
@@ -88,29 +86,33 @@ export class MainHelperForMac extends MainHelper {
       this.willInstallUpdateNextRound(infop);
     });
   }
+  // this is only for mac
+  willInstallUpdateNextRound(info) {
+    this.storage.willInstall(info);
+  }
 }
 
 export class MainHelperForWin extends MainHelper {
   constructor(updater) {
     super(updater);
-    // if get downloaded message within 2s will assume it can install update
-    this.startTimeInterval = 2000;
-    this.beforeTheStartTimeIntervalLimit = true;
-    setTimeout(() => { this.beforeTheStartTimeIntervalLimit = false; }, this.startTimeInterval);
+    this.updateInfo = null;
   }
   // overWrite
   // info is in updater's info format
   onUpdateDownloaded(info) {
     return new Promise((resolve) => {
-      if (!this.hasNotifiedUpdateInstall) {
-        if (this.beforeTheStartTimeIntervalLimit) {
-          this.notifyRendererToInstallUpdate();
-          this.updateInfo = UpdateInfo.getFromUpdaterUpdateInfo(info);
-          resolve(true);
-        } else {
-          resolve(false);
-        }
+      this.updateInfo = UpdateInfo.getFromUpdaterUpdateInfo(info);
+      if (!this.hasNotifiedUpdateInstall && this.withinStartInterval) {
+        this.storage.getPreviousDownload().then((oldInfo) => {
+          if (this.updateInfo.after(oldInfo)) {
+            resolve(this.storage.updateDownLoaded(this.updateInfo));
+          } else if (this.updateInfo.equalTo(oldInfo)) {
+            this.notifyRendererToInstallUpdate();
+            resolve();
+          }
+        });
       }
+      resolve();
     });
   }
   notifyRendererToInstallUpdate() {
