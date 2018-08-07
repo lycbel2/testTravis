@@ -22,14 +22,6 @@ export class MainHelper {
       }
     });
   }
-  // will be overwrite by win
-  // for mac if it downloaded the update it will install it
-  onUpdateDownloaded(info) {
-    return new Promise(() => {
-      const infop = UpdateInfo.getFromUpdaterUpdateInfo(info);
-      this.willInstallUpdateNextRound(infop);
-    });
-  }
 
   notifyRendererUpdateHasInstalled() {
     const message = new Message(Message.installedMessageLastRoundTitle, this.updateInfo);
@@ -38,7 +30,6 @@ export class MainHelper {
   }
   // this is only for mac
   willInstallUpdateNextRound(info) {
-    console.log('installed');
     this.storage.willInstall(info);
   }
 
@@ -80,7 +71,6 @@ export class MainHelper {
     this.waitForRenderer().then(() => {
       if (this.updater.win) {
         try {
-          console.log('sent');
           this.updater.win.webContents.send('update-message', text);
         } catch (err) {
           // means window is closed
@@ -90,22 +80,31 @@ export class MainHelper {
   }
 }
 
+export class MainHelperForMac extends MainHelper {
+  // for mac if it downloaded the update it will install it
+  onUpdateDownloaded(info) {
+    return new Promise(() => {
+      const infop = UpdateInfo.getFromUpdaterUpdateInfo(info);
+      this.willInstallUpdateNextRound(infop);
+    });
+  }
+}
 
 export class MainHelperForWin extends MainHelper {
   constructor(updater) {
     super(updater);
-    // if get downloaded message within 3s will assume this is a start install
-    this.startIndicateTime = 2000;
-    this.canInstall = true;
-    setTimeout(() => { this.canInstall = false; }, this.startIndicateTime);
+    // if get downloaded message within 2s will assume it can install update
+    this.startTimeInterval = 2000;
+    this.beforeTheStartTimeIntervalLimit = true;
+    setTimeout(() => { this.beforeTheStartTimeIntervalLimit = false; }, this.startTimeInterval);
   }
   // overWrite
-  // info is in updater's format
+  // info is in updater's info format
   onUpdateDownloaded(info) {
     return new Promise((resolve) => {
       if (!this.hasNotifiedUpdateInstall) {
-        if (this.canInstall) {
-          this.notifyRendererUpdateNeedInstall();
+        if (this.beforeTheStartTimeIntervalLimit) {
+          this.notifyRendererToInstallUpdate();
           this.updateInfo = UpdateInfo.getFromUpdaterUpdateInfo(info);
           resolve(true);
         } else {
@@ -114,7 +113,7 @@ export class MainHelperForWin extends MainHelper {
       }
     });
   }
-  notifyRendererUpdateNeedInstall() {
+  notifyRendererToInstallUpdate() {
     const message = new Message(Message.toInstallMessageNowTitle, this.updateInfo);
     this.sendStatusToWindow(message.toString());
   }
@@ -144,7 +143,7 @@ function MainHelperFactory() {
     case 'win32':
       return MainHelperForWin;
     case 'darwin':
-      return MainHelper;
+      return MainHelperForMac;
     default:
       return MainHelper;
   }

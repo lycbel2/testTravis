@@ -11,7 +11,6 @@ export default class Storage {
   }
   willInstall(info) {
     return new Promise((resolve) => {
-      console.log(info.toString());
       resolve(this.storage.setAsync(updateInstalledString, info.toString()));
     });
   }
@@ -25,7 +24,6 @@ export default class Storage {
   needToNotifyUpdateInstalledOrNot() {
     return new Promise((resolve) => {
       this.storage.getAsync(updateInstalledString).then((data) => {
-        console.log(`lycbb${JSON.stringify(data)}`);
         if (data && Object.keys(data).length !== 0) {
           resolve(UpdateInfo.getFromStorageString(data));
         } else {

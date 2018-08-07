@@ -5,8 +5,10 @@
         <div class="breathe-div" ref="breath" :style="linkProp"></div>
         <div class="overInner" >
             {{content}}
-            <div class="linksInUpdater" v-for="(item) in buttons">
+            <div class="linksInUpdater">
+                <div class="clickLinks" v-for="(item) in buttons">
                 <a href='#' v-on:click=item.callBack.call(item.THIS)> {{item.text}} </a>
+                </div>
             </div>
         </div>
     </div>
@@ -23,7 +25,7 @@
         helper: null,
         content: '',
         buttons: [],
-        position: { right: '', top: '50px', left: '' },
+        position: { right: '', top: '', left: '' },
         breathType: null,
         visibility: 'hidden',
       };
@@ -64,10 +66,10 @@
         this.position = { left: '50%', transform: 'translateX(-50%)' };
       },
       onLeftForWin() {
-        this.position = { left: '20px' };
+        this.position = { left: '18px' };
       },
       onRightForMac() {
-        this.position = { right: '20px' };
+        this.position = { right: '18px' };
       },
     },
     computed: {
@@ -85,40 +87,56 @@
 </script>
 
 <style lang="scss">
+    $bs: 0.5px; //bulb shadow weight
+    $bsl: 1px;  //large bulb shadow weight
     .updateContainer {
         position: fixed;
-        margin-right: 10px;
-        z-index: 1;
+        z-index: 2;
         display: -webkit-flex;
         -webkit-flex-direction: row;
         display: flex;
         flex-direction: row;
         opacity: 1;
         transition: opacity 4s linear;
-        @media screen and (max-width: 854px) {
+        @media screen and (max-width: 640px) {
             line-height: 30px;
             height:30px;
             font-size: 12px;
             letter-spacing: normal;
             top: 20px;
+            border-radius: 15px;
+            box-shadow: $bs $bs 0 0 rgba(255,255,255,0.15), $bs $bs 5px 0 rgba(0,0,0,0.3);
         }
-        @media screen and (min-width: 854px) and (max-width: 1920px) {
-            height: 38px;
+        @media screen and (min-width: 640px) and (max-width: 853px) {
+            height: 30px;
             color: #FFFFFF;
             font-size: 12px;
-            line-height: 38px;
+            line-height: 30px;
             letter-spacing: normal;
             top: 20px;
+            border-radius: 15px;
+            box-shadow: $bs $bs 0 0 rgba(255,255,255,0.15), $bs $bs 5px 0 rgba(0,0,0,0.3);
+        }
+        @media screen and (min-width: 853px) and (max-width: 1920px) {
+            height: 37.5px;
+            font-size: 15px;
+            line-height: 37.5px;
+            letter-spacing: normal;
+            top: 20px;
+            border-radius: 18.75px;
+            box-shadow: $bs $bs 0 0 rgba(255,255,255,0.15), $bs $bs 7px 0 rgba(0,0,0,0.3);
         }
         @media screen and (min-width: 1920px) {
             height: 60px;
-            font-size: 15px;
-            line-height: 60px;
+            font-size: 24px;
+            line-height: 37.5px;
             letter-spacing: normal;
             top: 20px;
+            border-radius: 30px;
+            box-shadow: $bsl $bsl 0 0 rgba(255,255,255,0.15), $bsl $bsl 15px 0 rgba(0,0,0,0.3);
         }
         .backGround {
-            z-index: 1;
+            z-index: 2;
             width: inherit;
             position: absolute;
             top: 0px;
@@ -127,15 +145,19 @@
             left: 0px;
             height: inherit;
             z-index: 1;
-            border-radius: 16px;
-            background-color: rgba(64, 64, 64, .89);
+            border-radius: inherit;
+            background-color: rgba(0,0,0,0.6);
             -webkit-filter: blur(0.5px);
         }
             .overInner {
                 font-family: "PingFang SC";
-                @media screen and (max-width: 854px) {
+                @media screen and (max-width: 640px) {
                   padding-right: 10px;
                   padding-left: 10px;
+                }
+                @media screen and (min-width: 640px) and (max-width: 854px) {
+                    padding-right: 10px;
+                    padding-left: 10px;
                 }
                 @media screen and (min-width: 854px) and (max-width: 1920px) {
                     padding-right: 10px;
@@ -147,7 +169,7 @@
                 }
                 position: relative;
                 height: inherit;
-                z-index: 2;
+                z-index: 3;
                 // font-family: PingFang-SC-Medium;
                 color: #FFFFFF;
                 font-weight: lighter;
@@ -162,11 +184,14 @@
                     margin-left: 10px;
                     a:active, a:visited, a:link {
                         text-decoration: none;
-                        color: rgba(135, 205, 255, 0.3);
+                        color: rgba(135, 205, 255, 0.7);
                     }
                     a:hover {
                         text-decoration: none;
                         color: rgb(255, 255, 255);
+                    }
+                    .clickLinks{
+                        display: inline;
                     }
                 }
             }
@@ -177,23 +202,30 @@
         display: none;
     }
     .breathe-div {
-        @media screen and (max-width: 854px) {
-            left: 10px;
+        @media screen and (max-width: 640px) {
+            height: 8px;
+            width: 8px;
+            left: 11px;
+        }
+        @media screen and (min-width: 640px) and (max-width: 854px) {
+            height: 8px;
+            width: 8px;
+            left: 11px;
         }
         @media screen and (min-width: 854px) and (max-width: 1920px) {
-            left: 12px;
+            height: 10px;
+            width: 10px;
+            left: 13.75px;
         }
         @media screen and (min-width: 1920px) {
-            left: 13px;
+            height: 16px;
+            width: 16px;
+            left: 22px;
         }
-        // position: relative;
-        transform: translateY(50%);
-        z-index: 2;
+        z-index: 3;
         position: absolute;
         top: 50%;
         transform: translate(0, -50%);
-        height: 8px;
-        width: 8px;
         background-color: #bbb;
         border-radius: 50%;
         overflow: hidden;
@@ -205,21 +237,21 @@
     @-webkit-keyframes breatheAlert {
         0% {
             opacity: .4;
-            // box-shadow: 0 1px 2px rgba(183,255,111,0.5), 0 1px 1px rgba(183,255,111,0.3) inset;;
+            box-shadow: 1px 1px 2px rgba(183,255,111,0.5), 10px 10px 1px rgba(183,255,111,0.3) inset;;
         }
         100% {
             opacity: 1;
-            // box-shadow: 0 1px 15px red, 0 1px 20px red inset;
+            box-shadow: 1px 1px 15px red, 10px 10px 10px red inset;
         }
     }
     @-webkit-keyframes breatheSuccess {
         0% {
             opacity: .4;
-            box-shadow: 0px 1px 1px rgba(183,255,111,0.5), 0 1px 4px rgba(183,255,111,0.3) inset;;
+            box-shadow: 1px 1px 1px rgba(183,255,111,0.5), 10px 10px 10px rgba(183,255,111,0.3) inset;;
         }
         100% {
             opacity: 0.8;
-            box-shadow: 0px 1px 1px greenyellow, 0 1px 4px green inset;
+            box-shadow: 1px 1px 1px greenyellow, 10px 10px 10px green inset;
         }
     }
 

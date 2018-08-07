@@ -4,7 +4,6 @@ import UpdaterNotification from '@/components/UpdaterView/UpdaterNotification';
 import { shallowMount, createLocalVue } from '@vue/test-utils';
 import VueI18n from 'vue-i18n';
 import { ipcMain, ipcRenderer } from './ipcMock.js';
-// import { UpdaterMessage, UpdateInfo } from '../../../../src/main/update/Message.js';
 import { RendererHelperForWin } from '../../../../src/main/update/RendererHelper.js';
 import MainHelper from './mainSimulator.js';
 let mainHelper;
@@ -22,6 +21,9 @@ const options = {
 let wrapper;
 describe('UpdaterNotification.vue', () => {
   beforeEach(() => {
+    Object.defineProperty(window, 'setTimeout', {
+      value: (name, time) => name(time),
+    });
     wrapper = shallowMount(UpdaterNotification, options);
     wrapper.vm.helper = new RendererHelperForWin(wrapper.vm);
     wrapper.vm.helper.ipc = ipcRenderer;

@@ -30,8 +30,6 @@ const UpdaterFactory = ((() => {
       this.app = app;
       this.mainHelper = new GetMainHelper(this);
       this.mainHelper.registerMessageReceiver();
-      // test lyc
-      // this.mainHelper.onUpdateDownloaded({ version: '1.2.3', note: 'hello' });
     }
     /*
      *it should be called when the app starts
@@ -40,8 +38,10 @@ const UpdaterFactory = ((() => {
      */
     onStart() {
       return new Promise((resolve) => {
+        // test lyc ->
         this.mainHelper.onUpdateDownloaded({ version: 123, note: 123 });
         setTimeout(() => { this.mainHelper.onStart(); }, 2000);
+        // <- test
         if (process.env.NODE_ENV === 'production') {
           this.startUpdate().then((message) => {
             if (message.substring(0, 5) === 'Error') {

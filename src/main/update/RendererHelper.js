@@ -10,7 +10,8 @@ class RendererHelper {
   learntHasInstalledUpdate() {
     this.vue.show();
     this.vue.setMessage(this.vue.$t('msg.update.updateInstalled'));
-    // this.vue.startDisappear(10000);
+    // it is a notification, and will disappear within specified time
+    this.vue.startDisappear(10000);
     this.vue.setBreathType('breatheSuccess');
   }
   registerListener() {
@@ -18,16 +19,17 @@ class RendererHelper {
       this.handleMessage(arg);
     });
   }
+  // as main helper will be ready before renderer helper
+  // will tell main it is ready then main can send message to renderer
   rendererReady() {
     const message = new Message(Message.rendererReadyTitle, 'void').toString();
     this.ipc.send('update-message', message);
   }
+  // renderer now will receive two kind of messages
+  // one is installed update last round for both mac and win
+  // one is need to install update for only win
   handleMessage(arg) {
-    if (!arg) {
-      return null;
-    }
     const message = Message.getFromMessage(arg);
-    console.log(message);
     switch (message.title) {
       case Message.installedMessageLastRoundTitle:
         this.learntHasInstalledUpdate(message);
@@ -49,7 +51,6 @@ export class RendererHelperForMac extends RendererHelper {
 /* the child class for windows will send message to render
  * if there is update which can be installed within 2 sec
  */
-
 export class RendererHelperForWin extends RendererHelper {
   constructor(vueObject) {
     super(vueObject);
@@ -87,17 +88,14 @@ export class RendererHelperForWin extends RendererHelper {
     this.restartOrNotToInstallUpdate(false);
   }
   handleMessage(arg) {
-    console.log('dd'+arg); // eslint-disable-line
     const message = super.handleMessage(arg);
-    if (!message) {
-      return null;
-    }
+    if (!message) return null;
+
     switch (message.title) {
       case Message.toInstallMessageNowTitle:
         this.hasUpdateWaitingForInstall(message);
         break;
       default:
-        break;
     }
     return null;
   }
@@ -109,6 +107,7 @@ function getHelper() {
     case 'darwin':
       return RendererHelperForMac;
     default:
+      // todo lyc
       return RendererHelper;
   }
 }

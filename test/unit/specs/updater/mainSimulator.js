@@ -1,4 +1,4 @@
-import { MainHelperForWin, MainHelper } from '../../../../src/main/update/MainHelper.js';
+import { MainHelperForWin, MainHelperForMac } from '../../../../src/main/update/MainHelper.js';
 
 class Updater {
   constructor(ipcMain) {
@@ -9,7 +9,7 @@ class Updater {
   }
 }
 
-class MainHelperS extends MainHelper {
+class MainHelperForMacS extends MainHelperForMac {
   constructor(ipcMain) {
     super(null);
     this.updater = new Updater(ipcMain);
@@ -30,9 +30,10 @@ const getMainHelper = (platform, ipcMain) => {
     case 'win32':
       return new MainHelperForWinS(ipcMain);
     case 'darwin':
-      return new MainHelperS(ipcMain);
+      return new MainHelperForMacS(ipcMain);
     default:
-      return new MainHelperS(ipcMain);
+      // todo
+      return new MainHelperForMacS(ipcMain);
   }
 };
 export default getMainHelper;
