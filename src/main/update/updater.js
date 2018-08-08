@@ -42,7 +42,7 @@ const UpdaterFactory = ((() => {
         // this.mainHelper.onUpdateDownloaded({ version: 123, note: 123 });
         // setTimeout(() => { this.mainHelper.onStart(); }, 2000);
         // <- test
-        if (process.env.NODE_ENV !== 'production') {
+        if (process.env.NODE_ENV === 'production') {
           this.mainHelper.onStart();
           this.startUpdate().then((message) => {
             if (message.substring(0, 5) === 'Error') {
