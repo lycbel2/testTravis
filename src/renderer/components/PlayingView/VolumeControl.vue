@@ -1,12 +1,13 @@
 <template>
   <transition name="fade" appear>
   <div class="volume" id="volume"
-    @mouseover.capture.stop="appearVolumeSlider"
-    @mouseout.capture.stop="hideVolumeSlider"
+    @mouseover.stop="appearVolumeSlider"
+    @mouseout.stop="hideVolumeSlider"
+    @mousemove="throttledCall"
     v-if="showVolumeController">
     <transition name="fade">
       <div class="container"  ref="sliderContainer"
-        @mousedown.capture.stop.left="onVolumeSliderClick"
+        @mousedown.stop.left="onVolumeSliderClick"
         v-if="showVolumeSlider">
         <div class="slider" ref="slider"
           :style="{ height: volume + '%' }">
@@ -14,7 +15,7 @@
       </div>
     </transition>
       <div class="button"
-        @mousedown.capture.stop.left="onVolumeButtonClick">
+        @mousedown.stop.left="onVolumeButtonClick">
         <img type="image/svg+xml" wmode="transparent"
           :src="srcOfVolumeButtonImage">
       </div>
@@ -23,6 +24,8 @@
 </template>;
 
 <script>
+import _ from 'lodash';
+
 export default {
   data() {
     return {
@@ -31,6 +34,7 @@ export default {
       onVolumeSliderMousedown: false,
       currentVolume: 0,
       timeoutIdOfVolumeControllerDisappearDelay: 0,
+      throttledCall: null,
     };
   },
   methods: {
@@ -39,18 +43,21 @@ export default {
       this.$_clearTimeoutDelay();
       if (this.volume !== 0) {
         this.currentVolume = this.volume;
-        this.$store.commit('Volume', 0);
+        this.$bus.$emit('volume', 0);
       } else {
-        this.$store.commit('Volume', this.currentVolume / 100);
+        this.$bus.$emit('volume', this.currentVolume / 100);
       }
     },
     onVolumeSliderClick(e) {
       console.log('onVolumeSliderClick');
       this.onVolumeSliderMousedown = true;
       const sliderOffsetBottom = this.$refs.sliderContainer.getBoundingClientRect().bottom;
-      this.$store.commit('Volume', (sliderOffsetBottom - e.clientY) / this.$refs.sliderContainer.clientHeight);
+      this.$bus.$emit('volume', (sliderOffsetBottom - e.clientY) / this.$refs.sliderContainer.clientHeight);
       this.$_documentVoluemeDragClear();
       this.$_documentVolumeSliderDragEvent();
+    },
+    clearAllWidgetsTimeout() {
+      this.$bus.$emit('clear-all-widget-disappear-delay');
     },
     appearVolumeSlider() {
       this.$_clearTimeoutDelay();
@@ -85,12 +92,12 @@ export default {
       if (sliderOffsetBottom - e.clientY > 1) {
         const volume = (sliderOffsetBottom - e.clientY) / this.$refs.sliderContainer.clientHeight;
         if (volume >= 1) {
-          this.$store.commit('Volume', 1);
+          this.$bus.$emit('volume', 1);
         } else {
-          this.$store.commit('Volume', volume);
+          this.$bus.$emit('volume', volume);
         }
       } else {
-        this.$store.commit('Volume', 0);
+        this.$bus.$emit('volume', 0);
       }
     },
     /**
@@ -135,7 +142,7 @@ export default {
     },
   },
   created() {
-    this.$bus.$on('volumecontroller-appear', () => {
+    this.$bus.$on('volumecontroller-appear-delay', () => {
       this.appearVolumeController();
       if (this.timeoutIdOfVolumeControllerDisappearDelay !== 0) {
         clearTimeout(this.timeoutIdOfVolumeControllerDisappearDelay);
@@ -157,9 +164,11 @@ export default {
           = setTimeout(this.hideVolumeController, 3000);
       }
     });
-    this.$bus.$on('volumecontroller-hide', () => {
-      this.hideVolumeController();
-    });
+    this.$bus.$on('volumecontroller-appear', this.appearVolumeController);
+    this.$bus.$on('volumecontroller-hide', this.hideVolumeController);
+  },
+  beforeMount() {
+    this.throttledCall = _.throttle(this.clearAllWidgetsTimeout, 500);
   },
 };
 </script>

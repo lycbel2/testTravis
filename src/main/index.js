@@ -1,5 +1,6 @@
-import { app, BrowserWindow } from 'electron' // eslint-disable-line
+import { app, BrowserWindow, ipcMain } from 'electron' // eslint-disable-line
 import Updater from './update/updater.js';
+import WindowResizer from './helpers/windowResizer.js';
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
@@ -10,7 +11,9 @@ if (process.env.NODE_ENV !== 'development') {
 
 let mainWindow;
 let updater;
-
+const winURL = process.env.NODE_ENV === 'development'
+  ? 'http://localhost:9080'
+  : `file://${__dirname}/index.html`;
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -25,10 +28,6 @@ app.on('second-instance', () => {
     }
   }
 });
-
-const winURL = process.env.NODE_ENV === 'development'
-  ? 'http://localhost:9080'
-  : `file://${__dirname}/index.html`;
 
 function createWindow() {
   /**
@@ -80,10 +79,33 @@ function createWindow() {
     mainWindow.show();
   });
 }
+function initMainWindowEvent() {
+  mainWindow.on('resize', () => {
+    mainWindow.webContents.send('mainCommit', 'windowSize', mainWindow.getSize());
+    mainWindow.webContents.send('mainCommit', 'fullscreen', mainWindow.isFullScreen());
+    mainWindow.webContents.send('main-resize');
+  });
+  mainWindow.on('move', () => {
+    mainWindow.webContents.send('mainCommit', 'windowPosition', mainWindow.getPosition());
+    mainWindow.webContents.send('main-move');
+  });
+  /* eslint-disable no-unused-vars */
+  ipcMain.on('windowSizeChange', (event, args) => {
+    mainWindow.setSize(...args);
+    event.sender.send('windowSizeChange-asyncReply', mainWindow.getSize());
+  });
+  ipcMain.on('windowPositionChange', (event, args) => {
+    mainWindow.setPosition(...args);
+    event.sender.send('windowPositionChange-asyncReply', mainWindow.getPosition());
+  });
+}
 
 app.on('ready', () => {
   app.setName('SPlayerX');
   createWindow();
+  const resizer = new WindowResizer(mainWindow);
+  resizer.onStart(); // will only register listener for win
+  initMainWindowEvent();
   updater = Updater.getInstance(mainWindow, app);
   updater.onStart().then((message) => { console.log(message); });
 });
@@ -93,14 +115,12 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
-// note it will not be called when windows restarts all shuts down
-app.on('quit', () => {
-  app.releaseSingleInstanceLock();
-});
+
 
 app.on('activate', () => {
   if (mainWindow === null) {
     createWindow();
+    initMainWindowEvent();
     updater.Window = mainWindow;
   }
 });

@@ -4,26 +4,32 @@
   <div class="progress"
     @mouseover.stop.capture="appearProgressSlider"
     @mouseleave="hideProgressSlider"
-    @mousemove="onProgresssBarMove"
+    @mousemove="onProgressBarMove"
     v-show="showProgressBar">
     <div class="fool-proof-bar" ref="foolProofBar"
-      @mousedown.left.stop="videoRestart">
+      @mousedown.stop="videoRestart"
+      :style="{cursor: cursorStyle}">
+      <div class="fake-button"
+        v-show="isOnProgress"
+        @mousedown="handleFakeBtnClick"
+        @mousemove.stop="handleFakeBtnMove"
+        :style="{height: heightOfThumbnail + 11 + 'px'}"></div>
       <div class="line"
         v-show="!isShaking"></div>
       <div class="button"
         v-show="isShaking"
         :class="{shake: isShaking}"
-        :style="{borderTopRightRadius: buttonRadius + 'px', borderBottomRightRadius: buttonRadius + 'px', width: buttonWidth + 'px'}"></div>
+        :style="{borderTopRightRadius: buttonRadius + 'px', borderBottomRightRadius: buttonRadius + 'px', width: buttonWidth + 'px', cursor: cursorStyle}"></div>
     </div>
     <div class="progress-container" ref="sliderContainer"
-      :style="{width: this.$electron.remote.getCurrentWindow().getSize()[0] - 20 + 'px'}"
-      @mousedown.left="onProgresssBarClick">
+      :style="{width: this.winWidth - 20 + 'px'}"
+      @mousedown.stop.capture="onProgressBarClick">
       <Thumbnail
-        v-if="showScreenshot"
+        v-show="showScreenshot"
         :src=src
         :positionOfScreenshot="positionOfScreenshot"
         :widthOfThumbnail="widthOfThumbnail"
-        :heightofScreenshot="heightofScreenshot"
+        :heightOfThumbnail="heightOfThumbnail"
         :screenshotContent="screenshotContent"
         :currentTime="thumbnailCurrentTime"/>
         <!-- translate优化 -->
@@ -82,7 +88,11 @@ export default {
       isCursorLeft: false,
       isOnProgress: false,
       isShaking: false,
+      isRestartClicked: false,
       timeoutIdOfProgressBarDisappearDelay: 0,
+      timeoutIdOfBackBarDisapppearDelay: 0,
+      timeoutIdOfHideProgressSlider: 0,
+      timeoutIdOfHideAllWidgets: 0,
       percentageOfReadyToPlay: 0,
       cursorPosition: 0,
       videoRatio: 0,
@@ -91,11 +101,13 @@ export default {
       thumbnailCurrentTime: 0,
       buttonWidth: 20,
       buttonRadius: 0,
+      cursorStyle: 'pointer',
     };
   },
   methods: {
     appearProgressSlider() {
       this.isOnProgress = true;
+      this.$bus.$emit('clear-all-widget-disappear-delay');
       this.$refs.playedSlider.style.height = PROGRESS_BAR_HEIGHT;
       this.$refs.readySlider.style.height = PROGRESS_BAR_HEIGHT;
       this.$refs.foolProofBar.style.height = PROGRESS_BAR_HEIGHT;
@@ -105,9 +117,6 @@ export default {
       if (!this.onProgressSliderMousedown) {
         this.isOnProgress = false;
         this.showScreenshot = false;
-        // Reset restart button
-        this.isShaking = false;
-        this.buttonWidth = 20;
         this.buttonRadius = 0;
 
         this.$refs.playedSlider.style.height = PROGRESS_BAR_SLIDER_HIDE_HEIGHT;
@@ -127,24 +136,19 @@ export default {
       }
     },
     videoRestart() {
-      this.$bus.$emit('seek', 0);
-      // Reset restart button
-      this.buttonWidth = 20;
       this.buttonRadius = 0;
-      this.isShaking = false;
+      this.showScreenshot = false;
+      this.$bus.$emit('seek', 0);
+      this.isRestartClicked = true;
+      this.cursorStyle = 'default';
     },
-    onProgresssBarClick(e) {
+    onProgressBarClick(e) {
       if (Number.isNaN(this.$store.state.PlaybackState.Duration)) {
         return;
       }
       this.onProgressSliderMousedown = true;
       const sliderOffsetLeft = this.$refs.sliderContainer.getBoundingClientRect().left;
       const p = (e.clientX - sliderOffsetLeft) / this.$refs.sliderContainer.clientWidth;
-      if (p <= 0.1) {
-        this.buttonWidth = 20;
-        this.buttonRadius = 0;
-        this.isShaking = false;
-      }
       this.$bus.$emit('seek', p * this.$store.state.PlaybackState.Duration);
       this.$_documentProgressDragClear();
       this.$_documentProgressDragEvent();
@@ -154,12 +158,16 @@ export default {
      * This mousemove event only works when the cursor
      * is not at mouse down event.
      */
-    onProgresssBarMove(e) {
-      /**
-       * TODO:
-       * 1. 解决由于mousemove触发机制导致的进度条拖动效果不平滑
-       * 解决方案1: 将事件放在document上尝试解决
-       */
+    onProgressBarMove(e) {
+      this.isRestartClicked = false;
+      this.cursorStyle = 'pointer';
+      if (this.timeoutIdOfHideAllWidgets) {
+        clearTimeout(this.timeoutIdOfHideAllWidgets);
+      }
+      if (this.timeoutIdOfHideProgressSlider) {
+        clearTimeout(this.timeoutIdOfHideProgressSlider);
+      }
+
       if (Number.isNaN(this.$store.state.PlaybackState.Duration)) {
         return;
       }
@@ -178,8 +186,7 @@ export default {
     $_effectProgressBarDraged(e) {
       const cursorPosition = e.clientX - FOOL_PROOFING_BAR_WIDTH;
       this.cursorPosition = cursorPosition;
-      // console.ulog(this.cursorPosition);
-      if (cursorPosition < this.curProgressBarEdge) {
+      if (cursorPosition <= this.curProgressBarEdge) {
         this.isCursorLeft = true;
       } else {
         this.isCursorLeft = false;
@@ -223,16 +230,31 @@ export default {
         this.onProgressSliderMousedown = false;
         // 可以考虑其他的方案
         if (this.flagProgressBarDraged) {
-          // Reset restart button
-          this.buttonWidth = 20;
           this.buttonRadius = 0;
-          this.isShaking = false;
-
           this.$bus.$emit('seek', this.percentageVideoDraged
            * this.$store.state.PlaybackState.Duration);
           this.flagProgressBarDraged = false;
         }
       };
+    },
+
+    handleFakeBtnClick() {
+      this.timeoutIdOfHideProgressSlider = setTimeout(() => {
+        this.hideProgressSlider();
+        this.$_hideAllWidgets();
+      }, 3000);
+    },
+    handleFakeBtnMove(e) {
+      if (this.isRestartClicked) {
+        this.hideProgressSlider();
+      } else {
+        this.onProgressBarMove(e);
+      }
+    },
+    $_hideAllWidgets() {
+      this.timeoutIdOfHideAllWidgets = setTimeout(() => {
+        this.$bus.$emit('hide-all-widgets');
+      }, 3000);
     },
   },
   computed: {
@@ -240,11 +262,15 @@ export default {
       if (Number.isNaN(this.$store.state.PlaybackState.Duration)) {
         return 0;
       }
-      const progressBarWidth = this.$electron.remote.getCurrentWindow().getSize()[0]
-        - FOOL_PROOFING_BAR_WIDTH;
+      const progressBarWidth = this.winWidth - FOOL_PROOFING_BAR_WIDTH;
       return (this.$store.state.PlaybackState.AccurateTime
         / this.$store.state.PlaybackState.Duration) * progressBarWidth;
     },
+    /**
+     * when cursor is not on progress bar, the cursor position
+     * should be the current progress bar edge to ensure the
+     * progress bar display correctly.
+     */
     cursorState() {
       if (this.isOnProgress) {
         return this.cursorPosition;
@@ -255,23 +281,25 @@ export default {
       return this.isCursorLeft ? 0 : Math.abs(this.curProgressBarEdge - this.cursorState);
     },
     backBarWidth() {
-      // 当isOnPorgress为false，backBarWidth为0，增加一个opacity transition的class，避免消失过快
       if (this.cursorPosition <= 0) {
         return 0;
       }
-      return this.isCursorLeft ? this.cursorPosition + 0.1 : 0;
+      return this.isCursorLeft ? this.cursorPosition : 0;
     },
     progressOpacity() {
+      if (this.isRestartClicked) {
+        return 0.9;
+      }
       if (this.isOnProgress) {
         return this.isCursorLeft ? 0.3 : 0.9;
       }
       return 0.9;
     },
-    heightofScreenshot() {
+    heightOfThumbnail() {
       return this.widthOfThumbnail / this.videoRatio;
     },
     positionOfScreenshot() {
-      const progressBarWidth = this.$electron.remote.getCurrentWindow().getSize()[0] - 20;
+      const progressBarWidth = this.winWidth - 20;
       const halfWidthOfScreenshot = this.widthOfThumbnail / 2;
       const minWidth = (this.widthOfThumbnail / 2) + 16;
       const maxWidth = progressBarWidth - 16;
@@ -286,39 +314,35 @@ export default {
       return this.timecodeFromSeconds(this.percentageOfReadyToPlay
         * this.$store.state.PlaybackState.Duration);
     },
+    winWidth() {
+      return this.$store.getters.winWidth;
+    },
   },
   watch: {
-    // if 判断内的内容重复
-    cursorPosition(newVal, oldVal) {
-      if (newVal < oldVal && this.isOnProgress && newVal <= 0) {
-        this.buttonWidth = this.cursorPosition <= -6 ? 14 : 20 + this.cursorPosition;
-        this.buttonRadius = Math.abs(this.cursorPosition);
+    cursorPosition(newVal) {
+      if (this.isOnProgress && newVal <= 0) {
+        this.buttonRadius = 20;
         this.isShaking = true;
       } else {
-        console.log('trigger cursor Position');
-        this.buttonWidth = 20;
-        this.buttonRadius = 0;
         this.isShaking = false;
+        this.buttonRadius = 0;
       }
     },
-    // 使用mouseenter和mouseleave改写, 减少性能上的损失
-    isOnProgress(newVal, oldVal) {
-      if (!oldVal && newVal && this.cursorPosition <= 0) {
-        console.log('trigger is shaking');
-        this.isShaking = true;
-        this.buttonWidth = this.cursorPosition <= -6 ? 14 : 20 + this.cursorPosition;
-        this.buttonRadius = Math.abs(this.cursorPosition);
+    isOnProgress(newVal) {
+      if (newVal) {
+        if (this.timeoutIdOfBackBarDisapppearDelay !== 0) {
+          clearTimeout(this.timeoutIdOfBackBarDisapppearDelay);
+        }
       } else {
-        this.isShaking = false;
-        this.buttonWidth = 20;
-        this.buttonRadius = 0;
+        // 通过设置延时函数，回避backSlider突变到0产生的视觉问题
+        this.timeoutIdOfBackBarDisapppearDelay =
+         setTimeout(() => { this.cursorPosition = 0; }, 300);
       }
     },
   },
   created() {
-    this.$electron.remote.getCurrentWindow().on('resize', () => {
-      const widthOfWindow = this.$electron.remote.getCurrentWindow().getSize()[0];
-      console.log(widthOfWindow);
+    this.$electron.ipcRenderer.on('main-resize', () => {
+      const widthOfWindow = this.winWidth;
       if (widthOfWindow < 845) {
         this.widthOfThumbnail = 136;
       } else if (widthOfWindow < 1920) {
@@ -326,10 +350,10 @@ export default {
       } else {
         this.widthOfThumbnail = 240;
       }
+      console.log('Size', this.widthOfThumbnail, this.heightOfThumbnail);
     });
     this.$bus.$on('progressslider-appear', () => {
       this.showScreenshot = false;
-      this.cursorPosition = 0;
       this.appearProgressSlider();
       this.isOnProgress = false;
       if (this.timeoutIdOfProgressBarDisappearDelay !== 0) {
@@ -341,7 +365,7 @@ export default {
           = setTimeout(this.hideProgressBar, 3000);
       }
     });
-    this.$bus.$on('progressbar-appear', () => {
+    this.$bus.$on('progressbar-appear-delay', () => {
       this.appearProgressBar();
       if (this.timeoutIdOfProgressBarDisappearDelay !== 0) {
         clearTimeout(this.timeoutIdOfProgressBarDisappearDelay);
@@ -352,9 +376,8 @@ export default {
           = setTimeout(this.hideProgressBar, 3000);
       }
     });
-    this.$bus.$on('progressbar-hide', () => {
-      this.hideProgressBar();
-    });
+    this.$bus.$on('progressbar-appear', this.appearProgressBar);
+    this.$bus.$on('progressbar-hide', this.hideProgressBar);
     this.$bus.$on('screenshot-sizeset', (e) => {
       this.videoRatio = e;
     });
@@ -387,6 +410,15 @@ export default {
     transition: height 150ms;
     background: rgba(255, 255, 255, 0.38);
 
+    .fake-button {
+      position: absolute;
+      left: 0;
+      bottom: 10px;
+      width: 20px;
+      background: transparent;
+      z-index: 100;
+    }
+
     .button {
       position: absolute;
       bottom: 0;
@@ -394,6 +426,7 @@ export default {
       height: 100%;
       background: rgba(255, 255, 255, 0.9);
       box-shadow: 0 0 20px 0 rgba(255, 255, 255, 0.5);
+      transition: border-radius 500ms;
       border-bottom-left-radius: 0;
       border-top-left-radius: 0;
     }
@@ -405,13 +438,13 @@ export default {
       height: 100%;
       width: 100%;
       background: rgba(255, 255, 255, 0.9);
-      box-shadow: 0 0 20px 0 rgba(255, 255, 255, 0.5); 
+      box-shadow: 0 0 20px 0 rgba(255, 255, 255, 0.5);
     }
   }
 
-  .fool-proof-bar:hover {
-    cursor: pointer;
-  }
+  // .fool-proof-bar:hover {
+  //   cursor: pointer;
+  // }
 
   .progress-container {
    position: absolute;
@@ -557,14 +590,11 @@ export default {
 }
 
 .shake {
-  transform-origin: left center;
-  animation-name: shake;
-  animation-duration: 180ms;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-}
-
-.shake:hover {
+  // transform-origin: left center;
+  // animation-name: shake;
+  // animation-duration: 180ms;
+  // animation-timing-function: ease-in-out;
+  // animation-iteration-count: infinite;
 }
 
 @keyframes shake {
@@ -577,7 +607,7 @@ export default {
   0%, 100% {
     transform: rotate(0deg);
   }
-  
+
 }
 
 </style>

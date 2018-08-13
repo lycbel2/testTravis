@@ -5,37 +5,44 @@
     @mouseup.left.stop="handleMouseUp"
     @mousemove="handleMouseMove">
     <titlebar currentView="LandingView"></titlebar>
-    <div class="background"
-      v-if="showShortcutImage">
-      <div class="background background-image">
-        <transition name="background-transition" mode="in-out">
-          <img
-          :key="imageTurn"
-          :src="backgroundUrl">
-        </transition>
+    <transition name="background-container-transition" mode="">
+      <div class="background"
+        v-if="showShortcutImage">
+        <div class="background background-image">
+          <transition name="background-transition" mode="in-out">
+            <img
+            :key="imageTurn"
+            :src="backgroundUrl">
+          </transition>
+        </div>
+        <div class="background background-mask"></div>
+        <div class="iteminfo item-name">
+          {{ itemInfo().baseName }}
+        </div>
+        <div class="iteminfo item-description">
+        </div>
+        <div class="iteminfo item-timing">
+          <span class="timing-played">
+            {{ timeInValidForm(timecodeFromSeconds(itemInfo().lastTime)) }}</span>
+          / {{ timeInValidForm(timecodeFromSeconds(itemInfo().duration)) }}
+        </div>
+        <div class="iteminfo item-progress">
+          <div class="progress-played" v-bind:style="{ width: itemInfo().percentage + '%' }"></div>
+        </div>
       </div>
-      <div class="background background-mask"></div>
-      <div class="iteminfo item-name">
-        {{ itemInfo().baseName }}
-      </div>
-      <div class="iteminfo item-description">
-      </div>
-      <div class="iteminfo item-timing">
-        <span class="timing-played">{{ timecodeFromSeconds(itemInfo().lastTime) }}</span>
-         / {{ timecodeFromSeconds(itemInfo().duration) }}
-      </div>
-      <div class="iteminfo item-progress">
-        <div class="progress-played" v-bind:style="{ width: itemInfo().percentage + '%' }"></div>
-      </div>
-    </div>
-    <div class="logo-container">
-      <img class="logo" src="~@/assets/logo.png" alt="electron-vue">
-    </div>
+    </transition>
+    <transition name="welcome-container-transition" mode="">
+      <div class="welcome-container" v-if="langdingLogoAppear">
+        <div class="logo-container">
+          <img class="logo" src="~@/assets/logo.png" alt="electron-vue">
+        </div>
 
-    <div class="welcome">
-      <div class="title" v-bind:style="$t('css.titleFontSize')">{{ $t("msg.titleName") }}</div>
-      <div class="version">v {{ this.$electron.remote.app.getVersion() }}</div>
-    </div>
+        <div class="welcome">
+          <div class="title" v-bind:style="$t('css.titleFontSize')">{{ $t("msg.titleName") }}</div>
+          <div class="version">v {{ this.$electron.remote.app.getVersion() }}</div>
+        </div>
+      </div>
+  </transition>
     <div class="controller">
       <div class="playlist"
         v-if="hasRecentPlaylist">
@@ -63,11 +70,13 @@
 
 <script>
 import path from 'path';
+import asyncStorage from '@/helpers/asyncStorage';
 import Titlebar from './Titlebar.vue';
 export default {
   name: 'landing-view',
   data() {
     return {
+      sagiHealthStatus: 'UNSET',
       showingPopupDialog: false,
       lastPlayedFile: [],
       imageTurn: '',
@@ -77,6 +86,8 @@ export default {
       showShortcutImage: false,
       isDragging: false,
       mouseDown: false,
+      invalidTimeRepresentation: '--',
+      langdingLogoAppear: true,
     };
   },
   components: {
@@ -96,20 +107,24 @@ export default {
   },
   mounted() {
     const { app } = this.$electron.remote;
-    if (this.$electron.remote.getCurrentWindow().isResizable()) {
-      this.$electron.remote.getCurrentWindow().setResizable(false);
-    }
+    // if (this.$electron.remote.getCurrentWindow().isResizable()) {
+    //   this.$electron.remote.getCurrentWindow().setResizable(false);
+    // }  todo lyc
 
-    console.log(app.getVersion(), app.getName());
-
-    this.$storage.get('recent-played', (err, data) => {
-      if (err) {
-        // TODO: proper error handle
-        console.error(err);
-      } else {
-        this.lastPlayedFile = data;
-        console.log(data);
+    this.sagi().healthCheck().then((status) => {
+      if (process.env.NODE_ENV !== 'production') {
+        this.sagiHealthStatus = status;
+        console.log(app.getName(), app.getVersion());
+        console.log(`sagi API Status: ${this.sagiHealthStatus}`);
       }
+    });
+
+    asyncStorage.get('recent-played').then((data) => {
+      this.lastPlayedFile = data;
+      console.log(data);
+    }).catch((err) => {
+      // TODO: proper error handle
+      console.error(err);
     });
     if (process.platform === 'win32') {
       document.querySelector('.application').style.webkitAppRegion = 'no-drag';
@@ -121,14 +136,15 @@ export default {
       return `url("${shortCut}")`;
     },
     itemInfo() {
-      const preBaseName = path.basename(this.item.path, path.extname(this.item.path));
-      const shortenedBaseName = `${preBaseName.substring(0, 30)}...`;
       return {
-        baseName: preBaseName.length > 30 ? shortenedBaseName : preBaseName,
+        baseName: path.basename(this.item.path, path.extname(this.item.path)),
         lastTime: this.item.lastPlayedTime,
         duration: this.item.duration,
         percentage: (this.item.lastPlayedTime / this.item.duration) * 100,
       };
+    },
+    timeInValidForm(time) {
+      return (Number.isNaN(time) ? this.invalidTimeRepresentation : time);
     },
     onRecentItemMouseover(item, index) {
       this.item = item;
@@ -143,7 +159,11 @@ export default {
           this.imageTurn = 'even';
           this.backgroundUrlEven = item.shortCut;
         }
+        this.langdingLogoAppear = false;
         this.showShortcutImage = true;
+      } else {
+        this.langdingLogoAppear = true;
+        this.showShortcutImage = false;
       }
     },
     onRecentItemMouseout(index) {
@@ -160,7 +180,7 @@ export default {
       const { dialog } = remote;
       const browserWindow = remote.BrowserWindow;
       const focusedWindow = browserWindow.getFocusedWindow();
-      const VALID_EXTENSION = ['mp4', 'mkv', 'mov'];
+      const VALID_EXTENSION = [];
 
       self.showingPopupDialog = true;
       dialog.showOpenDialog(focusedWindow, {
@@ -391,6 +411,24 @@ main {
   transition-delay: .2s;
 }
 .background-transition-enter, .background-transition-leave-to {
+  opacity: 0;
+}
+
+.welcome-container-transition-enter-active, .welcome-container-transition-leave-active{
+  transition: opacity .3s ease-in;
+  transition-delay: .2s;
+}
+
+.welcome-container-transition-enter, .welcome-container-transition-leave-to {
+  opacity: 0;
+}
+
+.background-container-transition-enter-active, .background-container-transition-leave-active{
+  transition: opacity .3s ease-in;
+  transition-delay: .2s;
+}
+
+.background-container-transition-enter, .background-container-transition-leave-to{
   opacity: 0;
 }
 

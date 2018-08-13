@@ -8,11 +8,11 @@
       @mousedown.self="resetDraggingState"
       @mousedown.right.stop="handleRightClick"
       @mousedown.left.stop.prevent="handleLeftClick"
-      @mouseup.left.prevent="handleMouseUp"
+      @mouseup.left.prevent.self="handleMouseUp"
       @mousewheel="wheelVolumeControll"
-      @mouseleave="hideAllWidgets"
-      @mousemove="handleMouseMove"
-      @dblclick.self="toggleFullScreenState">
+      @mouseleave="mouseleaveHandler"
+      @mousemove.self="throttledWakeUpCall"
+      @mouseenter="wakeUpAllWidgets">
       <titlebar currentView="Playingview"></titlebar>
       <TimeProgressBar :src="uri" />
       <TheTimeCodes/>
@@ -25,6 +25,7 @@
 </template>
 
 <script>
+import _ from 'lodash';
 import Titlebar from './Titlebar.vue';
 import VideoCanvas from './PlayingView/VideoCanvas.vue';
 import TheTimeCodes from './PlayingView/TheTimeCodes.vue';
@@ -48,12 +49,19 @@ export default {
   },
   data() {
     return {
+      leave: false,
       isDragging: false,
       showMask: false,
       cursorShow: true,
-      cursorDelay: null,
       popupShow: false,
       mouseDown: false,
+      throttledWakeUpCall: null,
+      timeoutIdOfAllWidgetsDisappearDelay: 0,
+      // the following 3 properties are used for checking if an event is a click or an dblclick
+      // during 200miliseconds, if a second click is detected, will toggle "FullScreen"
+      delay: 200, // changable and should be discussed.
+      clicks: 0,
+      timer: null,
     };
   },
   methods: {
@@ -67,29 +75,41 @@ export default {
         currentWindow.setFullScreen(true);
       }
     },
-    /**
-     * When the cursor shows, add a timeout function
-     * to hide the cursor. Each time the cursor moves,
-     * clear the timeout function and add a new one.
-     */
-    cursorDisplayControl() {
-      this.cursorShow = true;
-      clearTimeout(this.cursorDelay);
-      this.cursorDelay = setTimeout(() => {
-        this.cursorShow = false;
-      }, 3000);
-    },
     wakeUpAllWidgets() {
-      this.showMask = true;
-      this.isDragging = true;
-      this.cursorDisplayControl();
-      this.$bus.$emit('volumecontroller-appear');
-      this.$bus.$emit('progressbar-appear');
-      this.$bus.$emit('timecode-appear');
-      this.$bus.$emit('sub-ctrl-appear');
-      this.$bus.$emit('titlebar-appear');
+      if (!this.leave) {
+        console.log('wakeup');
+        this.showMask = true;
+        this.isDragging = true;
+        this.cursorShow = true;
+        this.$bus.$emit('volumecontroller-appear');
+        this.$bus.$emit('progressbar-appear');
+        this.$bus.$emit('timecode-appear');
+        this.$bus.$emit('sub-ctrl-appear');
+        this.$bus.$emit('titlebar-appear');
+        if (this.timeoutIdOfAllWidgetsDisappearDelay !== 0) {
+          clearTimeout(this.timeoutIdOfAllWidgetsDisappearDelay);
+          this.timeoutIdOfAllWidgetsDisappearDelay
+            = setTimeout(this.hideAllWidgets, 3000);
+        } else {
+          this.timeoutIdOfAllWidgetsDisappearDelay
+            = setTimeout(this.hideAllWidgets, 3000);
+        }
+      }
+      this.leave = false;
+    },
+    mouseleaveHandler() {
+      this.leave = true;
+      if (this.timeoutIdOfAllWidgetsDisappearDelay !== 0) {
+        clearTimeout(this.timeoutIdOfAllWidgetsDisappearDelay);
+        this.timeoutIdOfAllWidgetsDisappearDelay
+         = setTimeout(this.hideAllWidgets, 1500);
+      } else {
+        this.timeoutIdOfAllWidgetsDisappearDelay
+         = setTimeout(this.hideAllWidgets, 1500);
+      }
     },
     hideAllWidgets() {
+      console.log('leave');
       this.showMask = false;
       this.$bus.$emit('volumecontroller-hide');
       this.$bus.$emit('progressbar-hide');
@@ -99,6 +119,7 @@ export default {
       }
       this.$bus.$emit('sub-ctrl-hide');
       this.$bus.$emit('titlebar-hide');
+      this.cursorShow = false;
     },
     resetDraggingState() {
       this.isDragging = false;
@@ -109,25 +130,25 @@ export default {
       }
     },
     wheelVolumeControll(e) {
-      this.$bus.$emit('volumecontroller-appear');
+      this.$bus.$emit('volumecontroller-appear-delay');
       this.$bus.$emit('volumeslider-appear');
       if (e.deltaY < 0) {
         if (this.$store.state.PlaybackState.Volume + 0.1 < 1) {
-          this.$store.commit(
-            'Volume',
+          this.$bus.$emit(
+            'volume',
             this.$store.state.PlaybackState.Volume + 0.1,
           );
         } else {
-          this.$store.commit('Volume', 1);
+          this.$bus.$emit('volume', 1);
         }
       } else if (e.deltaY > 0) {
         if (this.$store.state.PlaybackState.Volume - 0.1 > 0) {
-          this.$store.commit(
-            'Volume',
+          this.$bus.$emit(
+            'volume',
             this.$store.state.PlaybackState.Volume - 0.1,
           );
         } else {
-          this.$store.commit('Volume', 0);
+          this.$bus.$emit('volume', 0);
         }
       }
     },
@@ -152,12 +173,31 @@ export default {
     },
     handleMouseUp() {
       this.mouseDown = false;
-      this.togglePlayback();
+      this.clicks += 1; // one click(mouseUp) triggered, clicks + 1
+      if (this.clicks === 1) { // if one click has been detected - clicks === 1
+        const self = this; // define a constant "self" for the following scope to use
+        this.timer = setTimeout(() => { // define timer as setTimeOut function
+          self.togglePlayback(); // which is togglePlayback
+          self.clicks = 0; // reset the "clicks" to zero for next event
+        }, this.delay);
+      } else { // else, if a second click has been detected - clicks === 2
+        clearTimeout(this.timer); // cancel the time out
+        this.toggleFullScreenState();
+        this.clicks = 0;// reset the "clicks" to zero
+      }
     },
+  },
+  beforeMount() {
+    this.throttledWakeUpCall = _.throttle(this.wakeUpAllWidgets, 1000);
   },
   mounted() {
     this.$bus.$emit('play');
     this.$electron.remote.getCurrentWindow().setResizable(true);
+    this.$bus.$on('clear-all-widget-disappear-delay', () => {
+      console.log('clear');
+      clearTimeout(this.timeoutIdOfAllWidgetsDisappearDelay);
+    });
+    this.$bus.$on('hide-all-widgets', this.hideAllWidgets);
   },
   computed: {
     uri() {
