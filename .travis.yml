@@ -14,10 +14,10 @@ cache:
   - node_modules
   - "$HOME/.electron"
 before_install:
-
+- bash test/ci/before_install.sh
 install:
-- npm install codecov
-- npm install electron-mocha
+- npm install -g codecov
+- npm install -g electron-mocha
 - npm install
 - npm update
 before_script:
